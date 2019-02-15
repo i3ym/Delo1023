@@ -17,6 +17,8 @@ public class Chunk
     List<GameObject> meshHolders = new List<GameObject>();
     readonly Vector3 zero = Vector3.zero;
 
+    static Quaternion angle1, angle2, angle3;
+
     List<int> tris = new List<int>();
     List<Vector3> verts = new List<Vector3>();
     List<Vector2> uv = new List<Vector2>();
@@ -29,6 +31,10 @@ public class Chunk
         X = x;
         Z = z;
         world = w;
+
+        angle1 = Quaternion.AngleAxis(90f, Vector3.up);
+        angle2 = Quaternion.AngleAxis(180f, Vector3.up);
+        angle3 = Quaternion.AngleAxis(270f, Vector3.up);
 
         parent = new GameObject(x + ", " + z);
         parent.transform.position = new Vector3(x * maxX, 0, z * maxX);
@@ -118,9 +124,7 @@ public class Chunk
 
         Block tb;
         int meshIndex = 0;
-        Quaternion angle;
-        byte rot;
-        int indx;
+        Vector3 coords = new Vector3();
 
         for (int x = 0; x < maxX; x++)
         {
@@ -137,23 +141,27 @@ public class Chunk
 
                     if (tb.Info.mesh != null)
                     {
-                        rot = tb.Rotation;
-
-                        indx = vertsM.Count;
-
-                        if (rot == 0)
-                            foreach (Vector3 v in tb.Info.mesh.vertices)
-                                vertsM.Add(v + new Vector3(x + .5f, y, z + .5f));
-                        else
-                        {
-                            angle = Quaternion.AngleAxis(rot * 90f, Vector3.up);
-                            foreach (Vector3 v in tb.Info.mesh.vertices)
-                                vertsM.Add(angle * v + new Vector3(x + .5f, y, z + .5f));
-                        }
-
                         foreach (int v in tb.Info.mesh.triangles)
-                            trisM.Add(v + indx);
+                            trisM.Add(v + vertsM.Count);
                         uvM.AddRange(tb.Info.uvs);
+                        
+                        coords.Set(x + .5f, y, z + .5f);
+
+                        switch (tb.Rotation)
+                        {
+                            case 0:
+                                foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(v + coords);
+                                break;
+                            case 1:
+                                foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle1 * v + coords);
+                                break;
+                            case 2:
+                                foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle2 * v + coords);
+                                break;
+                            case 3:
+                                foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle3 * v + coords);
+                                break;
+                        }
                     }
                     else
                     {
@@ -179,7 +187,7 @@ public class Chunk
             for (int y = 0; y < sizeY; y++)
                 for (int z = 0; z < maxZ; z++)
                 {
-                    if (verts.Count > 65000)
+                    if (verts.Count > 65300)
                     {
                         mesh = new Mesh();
                         mesh.vertices = verts.ToArray();
@@ -198,12 +206,11 @@ public class Chunk
                 }
 
         mesh = new Mesh();
-        mesh.name = index.ToString();
         mesh.vertices = verts.ToArray();
         mesh.triangles = tris.ToArray();
         mesh.uv = uv.ToArray();
         mesh.RecalculateNormals();
-        meshHolders[index++].GetComponent<MeshCollider>().sharedMesh = mesh;
+        meshHolders[index].GetComponent<MeshCollider>().sharedMesh = mesh;
 
         for (int i = meshIndex; i < meshes.Count; i++)
         {
@@ -367,7 +374,7 @@ public class Chunk
             go.AddComponent<MeshFilter>().mesh = mesh;
             if (!meshTexture) go.AddComponent<MeshRenderer>().material = Game.material;
             else go.AddComponent<MeshRenderer>().material = Game.materialMesh;
-            go.AddComponent<MeshCollider>(); //.sharedMesh = mesh;
+            go.AddComponent<MeshCollider>();
             go.transform.SetParent(parent.transform);
             go.transform.localPosition = zero;
             go.layer = 10;
@@ -390,6 +397,5 @@ public class Chunk
         go.GetComponent<MeshFilter>().mesh = mesh;
         if (!meshTexture) go.GetComponent<MeshRenderer>().material = Game.material;
         else go.GetComponent<MeshRenderer>().material = Game.materialMesh;
-        // go.GetComponent<MeshCollider>().sharedMesh = mesh;
     }
 }

@@ -12,6 +12,7 @@ public class World : MonoBehaviour
     public static int sizeX = 5;
     public static int sizeZ = 5;
 
+    [HideInInspector]
     public Builder builder;
     Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
     List<Chunk> SelectedChunks = new List<Chunk>();

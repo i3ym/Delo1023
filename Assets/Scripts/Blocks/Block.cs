@@ -13,6 +13,7 @@ public class Block
     public static readonly BlockInfo Door;
     public static readonly BlockInfo Trumpet;
     public static readonly BlockInfo Bed;
+    public static readonly BlockInfo DoorSupermarket;
 
     public BlockInfo Info;
     List<BComponent> components = new List<BComponent>();
@@ -29,9 +30,10 @@ public class Block
         Door = new BlockInfoMesh("door");
         Trumpet = new BlockInfoMesh("trumpet");
         Bed = new BlockInfoMesh("bed");
+        DoorSupermarket = new BlockInfoMesh("door_supermarket");
     }
 
-    public T GetComponent<T>() where T : BComponent => components.OfType<T>().FirstOrDefault(); //TODO fix performance ?
+    public T GetComponent<T>() where T : BComponent => components.OfType<T>().FirstOrDefault(); //TODO fix performance !
     public T AddComponent<T>(params object[] args) where T : BComponent
     {
         T t = (T) Activator.CreateInstance(typeof(T), args);
