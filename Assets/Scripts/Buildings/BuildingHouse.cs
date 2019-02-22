@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class BuildingHouse : Building
 {
+    public override byte Weight { get; } = 4;
     int Villagers = 0;
 
     public override void Update() { }
-    public override void Recalculate()
+
+    protected override void Recalc()
     {
         Game.Villagers -= Villagers;
         Villagers = 0;

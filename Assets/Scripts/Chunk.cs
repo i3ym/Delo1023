@@ -10,7 +10,7 @@ public class Chunk
     public List<Block[, ]> Blocks = new List<Block[, ]>();
     public int Price = 0;
     public Building building = null;
-    int sizeY = 0;
+    public int sizeY = 0;
     World world;
     public GameObject parent;
     List<Mesh> meshes = new List<Mesh>();
@@ -96,6 +96,16 @@ public class Chunk
         }
 
         return false;
+    }
+    public Block[] GetBlocksArray()
+    {
+        List<Block> blocks = new List<Block>();
+
+        foreach (Block[, ] b in Blocks)
+            foreach (Block bb in b)
+                blocks.Add(bb);
+
+        return blocks.ToArray();
     }
     public void RemoveBlock(int x, int y, int z, bool shootEvent = true)
     {

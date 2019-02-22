@@ -13,8 +13,9 @@ public class Game : MonoBehaviour
     public static Dictionary<string, Mesh> Meshes = new Dictionary<string, Mesh>();
     public static Texture2D Atlas, AtlasMesh;
     public static bool Building = false;
-    public static int Money { get => _money; set { _money = value; TextMoney.text = "money: " + value.ToString(); } }
-    public static int Villagers { get => _villagers; set { _villagers = value; TextVillagers.text = "villagers: " + value.ToString(); } }
+    public static int Money { get => _money; set { _money = value; game.textMoney.text = "money: " + value.ToString(); } }
+    public static int Villagers { get => _villagers; set { _villagers = value; game.textVillagers.text = "villagers: " + value.ToString(); } }
+    public static int Level { get => _level; set { _level = value; game.textLevel.text = "level: " + value.ToString(); } }
     public static Material material, materialMesh;
     public static World world;
     public static GameObject buildingChooser;
@@ -22,12 +23,12 @@ public class Game : MonoBehaviour
     static Game game = null;
     static int _money = 0;
     static int _villagers = 0;
-    static TextMeshProUGUI TextMoney, TextVillagers;
+    static int _level = 0;
 
     [SerializeField]
     Material mat, matMesh;
     [SerializeField]
-    TextMeshProUGUI textMoney, textVillagers;
+    TextMeshProUGUI textMoney, textVillagers, textLevel;
 
     void Awake()
     {
@@ -39,8 +40,6 @@ public class Game : MonoBehaviour
         game = this;
         camera = Camera.main;
 
-        TextMoney = textMoney;
-        TextVillagers = textVillagers;
         Money = 100000;
         Villagers = 0;
 
