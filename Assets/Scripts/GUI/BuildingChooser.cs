@@ -14,5 +14,5 @@ public class BuildingChooser : MonoBehaviour
         Game.buildingChooser = gameObject;
 
         house.onClick.AddListener(new UnityAction(() => Game.world.StartBuilding<BuildingHouse>()));
-}
+    }
 }

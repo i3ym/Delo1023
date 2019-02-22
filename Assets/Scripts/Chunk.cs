@@ -75,7 +75,7 @@ public class Chunk
         if (b.Info != Block.Transparent && b.Info.mesh != null)
         {
             b.Rotation = (byte) ((Game.camera.transform.eulerAngles.y + 45f) / 90);
-            if (b.Rotation == 5) b.Rotation = 0;
+            if (b.Rotation == 4) b.Rotation = 0;
 
             MultiblockComponent mc = b.GetComponent<MultiblockComponent>();
             if (mc != null)
@@ -123,8 +123,10 @@ public class Chunk
         uvM.Clear();
 
         Block tb;
+        MultimodelComponent mmc;
         int meshIndex = 0;
         Vector3 coords = new Vector3();
+        bool xb, xbn, zb, zbn;
 
         for (int x = 0; x < maxX; x++)
         {
@@ -136,31 +138,84 @@ public class Chunk
                     if (vertsM.Count > 64000) SetMesh(vertsM.ToArray(), trisM.ToArray(), uvM.ToArray(), meshIndex++, true);
 
                     tb = Blocks[y][x, z];
+                    coords.Set(x + .5f, y, z + .5f);
 
                     if (tb == null) continue;
 
                     if (tb.Info.mesh != null)
                     {
-                        foreach (int v in tb.Info.mesh.triangles)
-                            trisM.Add(v + vertsM.Count);
-                        uvM.AddRange(tb.Info.uvs);
-                        
-                        coords.Set(x + .5f, y, z + .5f);
+                        xb = isgl(x + 1, y, z);
+                        xbn = isgl(x - 1, y, z);
+                        zb = isgl(x, y, z + 1);
+                        zbn = isgl(x, y, z - 1);
 
-                        switch (tb.Rotation)
+                        mmc = tb.GetComponent<MultimodelComponent>();
+                        if (mmc != null && (xb || xbn || zb || zbn))
                         {
-                            case 0:
+                            if (xb && xbn && zb && zbn) // +
+                            {
+                                foreach (int v in mmc.center.triangles)
+                                    trisM.Add(v + vertsM.Count);
+                                uvM.AddRange(Game.TextureMeshUvs[mmc.center.name]);
+                                foreach (Vector3 v in mmc.center.vertices) vertsM.Add(v + coords);
+                            }
+                            else if ((xb && xbn && zb) || (xb && xbn && zbn) || (xb && zb && zbn) || (xbn && zb && zbn)) // т
+                            {
+                                foreach (int v in mmc.side.triangles)
+                                    trisM.Add(v + vertsM.Count);
+                                uvM.AddRange(Game.TextureMeshUvs[mmc.side.name]);
+
+                                if (!xb)
+                                    foreach (Vector3 v in mmc.side.vertices) vertsM.Add(v + coords);
+                                else if (!xbn)
+                                    foreach (Vector3 v in mmc.side.vertices) vertsM.Add(angle2 * v + coords);
+                                else if (!zb)
+                                    foreach (Vector3 v in mmc.side.vertices) vertsM.Add(angle3 * v + coords);
+                                else if (!zbn)
+                                    foreach (Vector3 v in mmc.side.vertices) vertsM.Add(angle1 * v + coords);
+                            }
+                            else if ((xb && zb) || (xb && zbn) || (xbn && zb) || (xbn && zbn)) // г
+                            {
+                                foreach (int v in mmc.corner.triangles)
+                                    trisM.Add(v + vertsM.Count);
+                                uvM.AddRange(Game.TextureMeshUvs[mmc.corner.name]);
+
+                                if (xb && zb)
+                                    foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(angle1 * v + coords);
+                                else if (zb && xbn)
+                                    foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(v + coords);
+                                else if (xbn && zbn)
+                                    foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(angle3 * v + coords);
+                                else if (zbn && xb)
+                                    foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(angle2 * v + coords);
+                            }
+                            else // -
+                            {
+                                foreach (int v in tb.Info.mesh.triangles)
+                                    trisM.Add(v + vertsM.Count);
+                                uvM.AddRange(tb.Info.uvs);
+
+                                if (xb || xbn)
+                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(v + coords);
+                                else if (zb || zbn)
+                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle1 * v + coords);
+                            }
+                        }
+                        else
+                        {
+                            foreach (int v in tb.Info.mesh.triangles)
+                                trisM.Add(v + vertsM.Count);
+
+                            uvM.AddRange(tb.Info.uvs);
+
+                            if (tb.Rotation == 0)
                                 foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(v + coords);
-                                break;
-                            case 1:
+                            else if (tb.Rotation == 1)
                                 foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle1 * v + coords);
-                                break;
-                            case 2:
+                            else if (tb.Rotation == 2)
                                 foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle2 * v + coords);
-                                break;
-                            case 3:
+                            else if (tb.Rotation == 3)
                                 foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle3 * v + coords);
-                                break;
                         }
                     }
                     else
@@ -173,6 +228,7 @@ public class Chunk
         }
         bool istr(int _x, int _y, int _z) => GetBlock(_x, _y, _z) == null || GetBlock(_x, _y, _z).Info.IsTransparent;
         bool isbl(int _x, int _y, int _z) => GetBlock(_x, _y, _z) == null;
+        bool isgl(int _x, int _y, int _z) => GetBlock(_x, _y, _z) != null && GetBlock(_x, _y, _z).Info == Block.GlassPane;
 
         SetMesh(verts.ToArray(), tris.ToArray(), uv.ToArray(), meshIndex++);
         SetMesh(vertsM.ToArray(), trisM.ToArray(), uvM.ToArray(), meshIndex++, true);

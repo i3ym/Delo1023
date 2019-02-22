@@ -72,6 +72,7 @@ public class Game : MonoBehaviour
             uvlist.Clear();
 
             Meshes.Add(texturesMesh[i].name, meshes[i]);
+            meshes[i].name = texturesMesh[i].name;
         }
 
         material = mat;

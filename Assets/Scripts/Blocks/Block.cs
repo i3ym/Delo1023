@@ -14,6 +14,7 @@ public class Block
     public static readonly BlockInfo Trumpet;
     public static readonly BlockInfo Bed;
     public static readonly BlockInfo DoorSupermarket;
+    public static readonly BlockInfo GlassPane;
 
     public BlockInfo Info;
     List<BComponent> components = new List<BComponent>();
@@ -24,13 +25,19 @@ public class Block
         Transparent = new BlockInfoMesh("transparent", 0);
         Builder.Blocks.Remove(Transparent);
 
-        Grass = new BlockInfo("grass", new string[] { "dirt", "dirt", "grass", "dirt", "dirt", "dirt" });
-        Dirt = new BlockInfo("dirt");
+        Grass = new BlockInfo("grass", new string[] { "dirt", "dirt", "grass", "dirt", "dirt", "dirt" }, false, price : 0);
+        Dirt = new BlockInfo("dirt", price : 0);
         Bricks = new BlockInfo("bricks");
         Door = new BlockInfoMesh("door");
         Trumpet = new BlockInfoMesh("trumpet");
         Bed = new BlockInfoMesh("bed");
-        DoorSupermarket = new BlockInfoMesh("door_supermarket");
+        GlassPane = new BlockInfoMesh("glass_pane", components : new Dictionary<Type, object[]>()
+        {
+            {
+                typeof(MultimodelComponent),
+                new object[] { "glass_pane_corner", "glass_pane_side", "glass_pane_center" }
+            }
+        });
     }
 
     public T GetComponent<T>() where T : BComponent => components.OfType<T>().FirstOrDefault(); //TODO fix performance !
