@@ -27,11 +27,11 @@ public class Block
 
         Grass = new BlockInfo("grass", new string[] { "dirt", "dirt", "grass", "dirt", "dirt", "dirt" }, false, price : 0);
         Dirt = new BlockInfo("dirt", price : 0);
-        Bricks = new BlockInfo("bricks");
+        Bricks = new BlockInfo("bricks", price : 10);
         Door = new BlockInfoMesh("door");
         Trumpet = new BlockInfoMesh("trumpet");
-        Bed = new BlockInfoMesh("bed");
-        GlassPane = new BlockInfoMesh("glass_pane", components : new Dictionary<Type, object[]>()
+        Bed = new BlockInfoMesh("bed", price : 20);
+        GlassPane = new BlockInfoMesh("glass_pane", price : 5, components : new Dictionary<Type, object[]>()
         {
             {
                 typeof(MultimodelComponent),

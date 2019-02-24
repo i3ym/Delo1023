@@ -4,8 +4,9 @@ public abstract class Building
 {
     public abstract byte Weight { get; }
     public Chunk[] Chunks;
-    int Level = 0;
+    int Exp = 0;
     static Block tempblock;
+    static int tempExp;
 
     public abstract void Update(); //TODO do update per second
 
@@ -13,8 +14,9 @@ public abstract class Building
     {
         if (Weight != 0)
         {
-            Game.Level -= Level;
-            Level = 0;
+            tempExp = Game.Exp;
+            tempExp -= Exp;
+            Exp = 0;
 
             foreach (Chunk c in Chunks)
                 for (int x = 0; x < Chunk.maxX; x++)
@@ -22,11 +24,12 @@ public abstract class Building
                         for (int z = 0; z < Chunk.maxZ; z++)
                         {
                             tempblock = c.GetBlock(x, y, z);
-                            if (tempblock != null) Level += tempblock.Info.Price * Weight;
+                            if (tempblock != null) Exp += tempblock.Info.Price * Weight;
                         }
 
-            Game.Level += Level;
+            tempExp += Exp;
         }
+        Game.Exp = tempExp;
 
         Recalc();
     }

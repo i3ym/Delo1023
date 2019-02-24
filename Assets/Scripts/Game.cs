@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Game : MonoBehaviour
 {
@@ -15,20 +16,40 @@ public class Game : MonoBehaviour
     public static bool Building = false;
     public static int Money { get => _money; set { _money = value; game.textMoney.text = "money: " + value.ToString(); } }
     public static int Villagers { get => _villagers; set { _villagers = value; game.textVillagers.text = "villagers: " + value.ToString(); } }
-    public static int Level { get => _level; set { _level = value; game.textLevel.text = "level: " + value.ToString(); } }
+    public static int Exp
+    {
+        get => _exp;
+        set
+        {
+            _exp = value;
+            Level = LvlForExp(value);
+            game.sliderExp.value = value - ExpForLvl(Level);
+            game.textExp.text = "exp: " + (value - ExpForLvl(Level));
+        }
+    }
+    public static int Level
+    {
+        get => _level;
+        private set
+        {
+            _level = value;
+            game.sliderExp.maxValue = (float) (ExpForLvl(value + 1) - ExpForLvl(value));
+            game.textLevel.text = "level: " + value.ToString();
+        }
+    }
     public static Material material, materialMesh;
     public static World world;
     public static GameObject buildingChooser;
     public static List<Building> Buildings = new List<Building>();
     static Game game = null;
-    static int _money = 0;
-    static int _villagers = 0;
-    static int _level = 0;
+    static int _money = 0, _villagers = 0, _level = 0, _exp = 0;
 
     [SerializeField]
     Material mat, matMesh;
     [SerializeField]
-    TextMeshProUGUI textMoney, textVillagers, textLevel;
+    TextMeshProUGUI textMoney, textVillagers, textLevel, textExp;
+    [SerializeField]
+    Slider sliderExp;
 
     void Awake()
     {
@@ -81,5 +102,12 @@ public class Game : MonoBehaviour
 
         Meshes.Add("transparent", new Mesh());
         TextureMeshUvs.Add("transparent", new Vector2[] { });
+    }
+
+    static int ExpForLvl(int lvl) => (int) (Math.Sqrt(lvl) * lvl * 1000.0);
+    static int LvlForExp(int exp)
+    {
+        for (int i = 0; true; i++)
+            if (ExpForLvl(i) > exp) return i - 1;
     }
 }
