@@ -17,7 +17,7 @@ public class Chunk
     List<GameObject> meshHolders = new List<GameObject>();
     readonly Vector3 zero = Vector3.zero;
 
-    static Quaternion angle1, angle2, angle3;
+    public static Quaternion angle1, angle2, angle3;
 
     List<int> tris = new List<int>();
     List<Vector3> verts = new List<Vector3>();
@@ -87,7 +87,7 @@ public class Chunk
                 }
         }
 
-        if (b.OnPlace(x + X * maxX, y, z + Z * maxZ))
+        if (b.OnPlace(x + X * maxX, y, z + Z * maxZ, b.Rotation))
         {
             Blocks[y][x, z] = b;
 

@@ -58,13 +58,13 @@ public class BlockInfo
 
     static Vector2[] To2(string tex)
     {
-        tempUv = Game.TextureUvs[tex];
+        tempUv = Game.TextureRects[tex];
 
         return new Vector2[] { new Vector2(tempUv.xMin, tempUv.yMin), new Vector2(tempUv.xMin, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMin), new Vector2(tempUv.xMax, tempUv.yMax) };
     }
     static Vector2[] To2Rotated(string tex)
     {
-        tempUv = Game.TextureUvs[tex];
+        tempUv = Game.TextureRects[tex];
 
         return new Vector2[] { new Vector2(tempUv.xMin, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMax), new Vector2(tempUv.xMin, tempUv.yMin), new Vector2(tempUv.xMax, tempUv.yMin) };
     }

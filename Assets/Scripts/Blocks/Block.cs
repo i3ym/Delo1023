@@ -15,6 +15,7 @@ public class Block
     public static readonly BlockInfo Bed;
     public static readonly BlockInfo DoorSupermarket;
     public static readonly BlockInfo GlassPane;
+    public static readonly BlockInfo StreetLight;
 
     public BlockInfo Info;
     List<BComponent> components = new List<BComponent>();
@@ -38,6 +39,13 @@ public class Block
                 new object[] { "glass_pane_corner", "glass_pane_side", "glass_pane_center" }
             }
         });
+        StreetLight = new BlockInfoMesh("street_light", components : new Dictionary<Type, object[]>()
+        {
+            {
+                typeof(LightComponent),
+                new object[] { new LightHolder(new Vector3(0.245556f, 3.94141f, 0f), new Vector3(90f, 0f, 0f), LightType.Spot, 10f, 30, Color.white, 1f) }
+            }
+        });
     }
 
     public T GetComponent<T>() where T : BComponent => components.OfType<T>().FirstOrDefault(); //TODO fix performance !
@@ -59,10 +67,10 @@ public class Block
         return t;
     }
 
-    public bool OnPlace(int x, int y, int z)
+    public bool OnPlace(int x, int y, int z, int rot)
     {
         foreach (BComponent c in components)
-            if (!c.OnPlace(x, y, z)) return false;
+            if (!c.OnPlace(x, y, z, rot)) return false;
 
         return true;
     }

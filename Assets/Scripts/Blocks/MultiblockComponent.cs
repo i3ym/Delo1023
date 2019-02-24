@@ -10,7 +10,7 @@ public class MultiblockComponent : BComponent
         locations.CopyTo(Locations, 0);
     }
 
-    public override bool OnPlace(int x, int y, int z)
+    public override bool OnPlace(int x, int y, int z, int rot)
     {
         Block b = Block.Transparent.Instance();
         b.AddComponent<MultiblockPartComponent>(x, y, z);

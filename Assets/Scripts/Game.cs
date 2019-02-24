@@ -9,7 +9,8 @@ using UnityEngine.UI;
 public class Game : MonoBehaviour
 {
     public static new Camera camera;
-    public static Dictionary<string, Rect> TextureUvs = new Dictionary<string, Rect>();
+    public static Dictionary<string, ModelHolder> models = new Dictionary<string, ModelHolder>();
+    public static Dictionary<string, Rect> TextureRects = new Dictionary<string, Rect>();
     public static Dictionary<string, Vector2[]> TextureMeshUvs = new Dictionary<string, Vector2[]>();
     public static Dictionary<string, Mesh> Meshes = new Dictionary<string, Mesh>();
     public static Texture2D Atlas, AtlasMesh;
@@ -61,9 +62,6 @@ public class Game : MonoBehaviour
         game = this;
         camera = Camera.main;
 
-        Money = 100000;
-        Villagers = 0;
-
         Atlas = new Texture2D(1, 1);
         Atlas.filterMode = FilterMode.Point;
         Atlas.wrapMode = TextureWrapMode.Repeat;
@@ -74,7 +72,7 @@ public class Game : MonoBehaviour
 
         Rect[] rects = Atlas.PackTextures(textures, 0);
         for (int i = 0; i < textures.Length; i++)
-            TextureUvs.Add(textures[i].name, rects[i]);
+            TextureRects.Add(textures[i].name, rects[i]);
 
         AtlasMesh = new Texture2D(1, 1);
         AtlasMesh.filterMode = FilterMode.Point;
@@ -102,6 +100,9 @@ public class Game : MonoBehaviour
 
         Meshes.Add("transparent", new Mesh());
         TextureMeshUvs.Add("transparent", new Vector2[] { });
+
+        Money = 100000;
+        Villagers = 0;
     }
 
     static int ExpForLvl(int lvl) => (int) (Math.Sqrt(lvl) * lvl * 1000.0);
