@@ -18,7 +18,7 @@ public class Block
     public static readonly BlockInfo StreetLight;
 
     public BlockInfo Info;
-    List<BComponent> components = new List<BComponent>();
+    Dictionary<Type, BComponent> components = new Dictionary<Type, BComponent>();
     public byte Rotation = 0;
 
     static Block()
@@ -48,35 +48,35 @@ public class Block
         });
     }
 
-    public T GetComponent<T>() where T : BComponent => components.OfType<T>().FirstOrDefault(); //TODO fix performance !
+    public T GetComponent<T>() where T : BComponent => components.ContainsKey(typeof(T)) ? (T) components[typeof(T)] : null;
     public T AddComponent<T>(params object[] args) where T : BComponent
     {
         T t = (T) Activator.CreateInstance(typeof(T), args);
-        components.Add(t);
+        components.Add(typeof(T), t);
         return t;
     }
     public T AddComponent<T>(T t) where T : BComponent
     {
-        components.Add(t);
+        components.Add(typeof(T), t);
         return t;
     }
     public BComponent AddComponent(Type type, params object[] args)
     {
         BComponent t = (BComponent) Activator.CreateInstance(type, args);
-        components.Add(t);
+        components.Add(type, t);
         return t;
     }
 
     public bool OnPlace(int x, int y, int z, int rot)
     {
-        foreach (BComponent c in components)
+        foreach (BComponent c in components.Values)
             if (!c.OnPlace(x, y, z, rot)) return false;
 
         return true;
     }
     public bool OnBreak(int x, int y, int z)
     {
-        foreach (BComponent c in components)
+        foreach (BComponent c in components.Values)
             if (!c.OnBreak(x, y, z)) return false;
 
         return true;
