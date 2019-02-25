@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Chunk
@@ -26,19 +27,27 @@ public class Chunk
     List<Vector3> vertsM = new List<Vector3>();
     List<Vector2> uvM = new List<Vector2>();
 
+    static Chunk()
+    {
+        angle1 = Quaternion.AngleAxis(90f, Vector3.up);
+        angle2 = Quaternion.AngleAxis(180f, Vector3.up);
+        angle3 = Quaternion.AngleAxis(270f, Vector3.up);
+    }
     public Chunk(int x, int z, World w)
     {
         X = x;
         Z = z;
         world = w;
 
-        angle1 = Quaternion.AngleAxis(90f, Vector3.up);
-        angle2 = Quaternion.AngleAxis(180f, Vector3.up);
-        angle3 = Quaternion.AngleAxis(270f, Vector3.up);
-
         parent = new GameObject(x + ", " + z);
         parent.transform.position = new Vector3(x * maxX, 0, z * maxX);
 
+        Generate();
+        UpdateMesh();
+    }
+
+    void Generate()
+    {
         for (int xx = 0; xx < maxX; xx++)
             for (int yy = 0; yy < 9; yy++)
                 for (int zz = 0; zz < maxZ; zz++)
@@ -46,10 +55,7 @@ public class Chunk
         for (int xx = 0; xx < maxX; xx++)
             for (int zz = 0; zz < maxZ; zz++)
                 SetBlock(xx, 9, zz, Block.Grass.Instance(), false);
-
-        UpdateMesh();
     }
-
     public int CalculatePrice()
     {
         int price = 0;

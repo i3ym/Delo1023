@@ -31,15 +31,23 @@ public class World : MonoBehaviour
         layerMask = LayerMask.GetMask("Chunk");
         Game.buildingChooser.SetActive(false);
 
-        for (int x = 0; x < sizeX; x++)
-            for (int z = 0; z < sizeZ; z++)
-                Chunks[x, z] = new Chunk(x, z, this);
+        StartCoroutine(CreateChunksCoroutine());
     }
     void Update()
     {
         if (Game.Building) return;
 
         SelectChunk();
+    }
+
+    IEnumerator CreateChunksCoroutine()
+    {
+        for (int x = 0; x < sizeX; x++)
+            for (int z = 0; z < sizeZ; z++)
+            {
+                Chunks[x, z] = new Chunk(x, z, this);
+                yield return null;
+            }
     }
 
     void SelectChunk()
