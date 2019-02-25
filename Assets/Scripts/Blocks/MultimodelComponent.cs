@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class MultimodelComponent : BComponent
 {
-    public Mesh corner, side, center;
+    public DeloMesh corner, side, center;
 
     public MultimodelComponent(string corner, string side, string center) // г т +
     {
-        this.corner = Game.Meshes[corner];
-        this.side = Game.Meshes[side];
-        this.center = Game.Meshes[center];
+        this.corner = new DeloMesh(Game.Meshes[corner]);
+        this.side = new DeloMesh(Game.Meshes[side]);
+        this.center = new DeloMesh(Game.Meshes[center]);
     }
 }
