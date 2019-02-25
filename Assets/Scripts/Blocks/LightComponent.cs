@@ -18,14 +18,28 @@ public class LightComponent : BComponent
 
         foreach (LightHolder light in lights)
         {
-            Debug.Log(rot);
             go = new GameObject("light");
-            if (rot == 0) go.transform.position = light.position + new Vector3(x + .5f, y, z + .5f);
-            else if (rot == 1) go.transform.position = Chunk.angle1 * light.position + new Vector3(x + .5f, y, z + .5f);
-            else if (rot == 2) go.transform.position = Chunk.angle2 * light.position + new Vector3(x + .5f, y, z + .5f);
-            else if (rot == 3) go.transform.position = Chunk.angle3 * light.position + new Vector3(x + .5f, y, z + .5f);
+            if (rot == 0)
+            {
+                go.transform.position = light.position + new Vector3(x + .5f, y, z + .5f);
+                go.transform.eulerAngles = light.rotation;
+            }
+            else if (rot == 1)
+            {
+                go.transform.position = Chunk.angle1 * light.position + new Vector3(x + .5f, y, z + .5f);
+                go.transform.rotation = Chunk.angle1 * Quaternion.Euler(light.rotation);
+            }
+            else if (rot == 2)
+            {
+                go.transform.position = Chunk.angle2 * light.position + new Vector3(x + .5f, y, z + .5f);
+                go.transform.rotation = Chunk.angle2 * Quaternion.Euler(light.rotation);
+            }
+            else if (rot == 3)
+            {
+                go.transform.position = Chunk.angle3 * light.position + new Vector3(x + .5f, y, z + .5f);
+                go.transform.rotation = Chunk.angle3 * Quaternion.Euler(light.rotation);
+            }
 
-            go.transform.eulerAngles = light.rotation;
             l = go.AddComponent<Light>();
             l.type = light.type;
             l.range = light.range;
@@ -34,6 +48,7 @@ public class LightComponent : BComponent
             l.intensity = light.intensity;
             l.shadows = LightShadows.Hard;
             l.renderMode = LightRenderMode.ForcePixel;
+            l.bounceIntensity = 0f;
         }
 
         return true;

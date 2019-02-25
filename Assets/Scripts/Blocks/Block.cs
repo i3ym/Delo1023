@@ -43,7 +43,7 @@ public class Block
         {
             {
                 typeof(LightComponent),
-                new object[] { new LightHolder(new Vector3(0.245556f, 3.94141f, 0f), new Vector3(90f, 0f, 0f), LightType.Spot, 10f, 30, Color.white, 1f) }
+                new object[] { new LightHolder(new Vector3(0f, 3.94141f, -.245556f), new Vector3(70f, 180f, 0f), LightType.Spot, 10f, 80, Color.white, 2f) }
             }
         });
     }
