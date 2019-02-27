@@ -60,7 +60,7 @@ public class BlockInfo
     {
         tempUv = Game.TextureRects[tex];
 
-        return new Vector2[] { new Vector2(tempUv.xMin, tempUv.yMin), new Vector2(tempUv.xMin, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMin), new Vector2(tempUv.xMax, tempUv.yMax) };
+        return new Vector2[] { new Vector2(tempUv.xMin, tempUv.yMin), new Vector2(tempUv.xMin, tempUv.yMax),new Vector2(tempUv.xMax, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMin) };
     }
     static Vector2[] To2Rotated(string tex)
     {
