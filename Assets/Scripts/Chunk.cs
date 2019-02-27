@@ -28,14 +28,15 @@ public class Chunk
         angle2 = Quaternion.AngleAxis(180f, Vector3.up);
         angle3 = Quaternion.AngleAxis(270f, Vector3.up);
 
-        CubeMeshes.Add(Sides.Front, (new sbyte[] { 1, 1, 0, 0 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 1, 1, 1, 1 }));
-        CubeMeshes.Add(Sides.Back, (new sbyte[] { 0, 0, 1, 1 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 0, 0, 0, 0 }));
+        CubeMeshes.Add(Sides.Right, (new sbyte[] { 1, 1, 1, 1 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 0, 0, 1, 1 }));
+        CubeMeshes.Add(Sides.Left, (new sbyte[] { 0, 0, 0, 0 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 1, 1, 0, 0 }));
 
         CubeMeshes.Add(Sides.Top, (new sbyte[] { 0, 0, 1, 1 }, new sbyte[] { 1, 1, 1, 1 }, new sbyte[] { 0, 1, 1, 0 }));
         CubeMeshes.Add(Sides.Bottom, (new sbyte[] { 1, 1, 0, 0 }, new sbyte[] { 0, 0, 0, 0 }, new sbyte[] { 0, 1, 1, 0 }));
 
-        CubeMeshes.Add(Sides.Right, (new sbyte[] { 1, 1, 1, 1 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 0, 0, 1, 1 }));
-        CubeMeshes.Add(Sides.Left, (new sbyte[] { 0, 0, 0, 0 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 1, 1, 0, 0 }));
+        CubeMeshes.Add(Sides.Front, (new sbyte[] { 1, 1, 0, 0 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 1, 1, 1, 1 }));
+        CubeMeshes.Add(Sides.Back, (new sbyte[] { 0, 0, 1, 1 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 0, 0, 0, 0 }));
+
     }
     public Chunk(int x, int z, World w)
     {
@@ -173,6 +174,7 @@ public class Chunk
         {
             mesh.uv = uv;
             mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
         }
         mesh.Optimize(); //TODO what is this
 
@@ -405,10 +407,10 @@ public class Chunk
 
             if (uvs != null)
             {
-                uv.Add(uvs[0]);
-                uv.Add(uvs[1]);
-                uv.Add(uvs[2]);
-                uv.Add(uvs[3]);
+                uv.Add(uvs[(int) side * 4 + 0]);
+                uv.Add(uvs[(int) side * 4 + 1]);
+                uv.Add(uvs[(int) side * 4 + 2]);
+                uv.Add(uvs[(int) side * 4 + 3]);
             }
         }
         static void CombineArrays()

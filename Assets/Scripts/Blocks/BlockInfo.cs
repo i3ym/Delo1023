@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class BlockInfo
 {
     public string Name { get; protected set; }
     public int Price { get; protected set; }
     public bool IsTransparent { get; protected set; }
-    public Vector2[] uvs { get; protected set; } // 0-3 left  4-7 right  8-11 top  12-15 bottom  16-19 front  20-23 back
+    public Vector2[] uvs { get; protected set; } // 0-3 right  4-7 left  8-11 top  12-15 bottom  16-19 front  20-23 back
     public DeloMesh mesh { get; protected set; } = null;
     protected Dictionary<Type, object[]> Components = new Dictionary<Type, object[]>();
     protected Block _instance = null;
@@ -29,8 +30,8 @@ public class BlockInfo
             templistUv.AddRange(To2(textures[1]));
             templistUv.AddRange(To2(textures[2]));
             templistUv.AddRange(To2(textures[3]));
-            templistUv.AddRange(To2Rotated(textures[4]));
-            templistUv.AddRange(To2Rotated(textures[5]));
+            templistUv.AddRange(To2(textures[4]));
+            templistUv.AddRange(To2(textures[5]));
         }
         else
         {
@@ -40,8 +41,6 @@ public class BlockInfo
             templistUv.AddRange(tempUvs);
             templistUv.AddRange(tempUvs);
             templistUv.AddRange(tempUvs);
-
-            tempUvs = To2Rotated(name);
             templistUv.AddRange(tempUvs);
             templistUv.AddRange(tempUvs);
         }
@@ -61,12 +60,6 @@ public class BlockInfo
         tempUv = Game.TextureRects[tex];
 
         return new Vector2[] { new Vector2(tempUv.xMin, tempUv.yMin), new Vector2(tempUv.xMin, tempUv.yMax),new Vector2(tempUv.xMax, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMin) };
-    }
-    static Vector2[] To2Rotated(string tex)
-    {
-        tempUv = Game.TextureRects[tex];
-
-        return new Vector2[] { new Vector2(tempUv.xMin, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMax), new Vector2(tempUv.xMin, tempUv.yMin), new Vector2(tempUv.xMax, tempUv.yMin) };
     }
 
     public Block Instance()

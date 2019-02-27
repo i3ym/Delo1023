@@ -82,7 +82,7 @@ public class Game : MonoBehaviour
         for (int i = 0; i < texturesMeshes.Length; i++)
         {
             for (int j = 0; j < meshes[i].uv.Length; j++)
-                uvlist.Add(new Vector2(meshes[i].uv[j].x * rects[i].width + rects[i].xMin, meshes[i].uv[j].y * rects[i].height + rects[i].yMin));
+                uvlist.Add(new Vector2(meshes[i].uv[j].x * rects[i + texturesBlocks.Length].width + rects[i + texturesBlocks.Length].xMin, meshes[i].uv[j].y * rects[i + texturesBlocks.Length].height + rects[i + texturesBlocks.Length].yMin));
 
             TextureMeshUvs.Add(texturesMeshes[i].name, uvlist.ToArray());
             uvlist.Clear();
