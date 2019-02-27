@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -20,10 +21,6 @@ public class Chunk
 
     public static Quaternion angle1, angle2, angle3;
     static Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > CubeMeshes = new Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > ();
-
-    List<int> trisM = new List<int>();
-    List<Vector3> vertsM = new List<Vector3>();
-    List<Vector2> uvM = new List<Vector2>();
 
     static Chunk()
     {
@@ -50,7 +47,7 @@ public class Chunk
         parent.transform.position = new Vector3(x * maxX, 0, z * maxX);
 
         Generate();
-        UpdateMesh();
+        MeshCreator.UpdateMesh(this, Blocks, sizeY);
     }
 
     void Generate()
@@ -104,7 +101,7 @@ public class Chunk
         {
             Blocks[y][x, z] = b;
 
-            if (update) UpdateMesh();
+            if (update) MeshCreator.UpdateMesh(this, Blocks, sizeY);
             return true;
         }
 
@@ -127,7 +124,7 @@ public class Chunk
 
         if (shootEvent && Blocks[y][x, z].OnBreak(x + X * maxX, y, z + Z * maxZ)) Blocks[y][x, z] = null;
         else Blocks[y][x, z] = null;
-        UpdateMesh();
+        MeshCreator.UpdateMesh(this, Blocks, sizeY);
     }
     public Block GetBlock(int x, int y, int z)
     {
@@ -136,31 +133,7 @@ public class Chunk
 
         return Blocks[y][x, z];
     }
-    void AddCubeMesh(Sides side, int x, int y, int z, Vector2[] uvs, List<Vector3> verts, List<int> tris, List<Vector2> uv)
-    {
-        var adds = CubeMeshes[side];
-
-        verts.Add(new Vector3(x + adds.X[0], y + adds.Y[0], z + adds.Z[0]));
-        verts.Add(new Vector3(x + adds.X[1], y + adds.Y[1], z + adds.Z[1]));
-        verts.Add(new Vector3(x + adds.X[2], y + adds.Y[2], z + adds.Z[2]));
-        verts.Add(new Vector3(x + adds.X[3], y + adds.Y[3], z + adds.Z[3]));
-
-        tris.Add(0);
-        tris.Add(1);
-        tris.Add(2);
-        tris.Add(0);
-        tris.Add(2);
-        tris.Add(3);
-
-        if (uvs != null)
-        {
-            uv.Add(uvs[0]);
-            uv.Add(uvs[1]);
-            uv.Add(uvs[2]);
-            uv.Add(uvs[3]);
-        }
-    }
-    void SetMesh(Vector3[] verts, int[] tris, Vector2[] uv, int index, bool meshTexture = false)
+    void SetMesh(Vector3[] verts, int[] tris, Vector2[] uv, int index, bool isCollider)
     {
         Mesh mesh;
         GameObject go;
@@ -170,10 +143,13 @@ public class Chunk
             mesh = new Mesh();
             go = new GameObject();
 
-            go.AddComponent<MeshFilter>().mesh = mesh;
-            if (!meshTexture) go.AddComponent<MeshRenderer>().material = Game.material;
-            else go.AddComponent<MeshRenderer>().material = Game.materialMesh;
-            go.AddComponent<MeshCollider>();
+            if (isCollider) go.AddComponent<MeshCollider>().sharedMesh = mesh;
+            else
+            {
+                go.AddComponent<MeshFilter>().mesh = mesh;
+                go.AddComponent<MeshRenderer>().material = Game.material;
+            }
+
             go.transform.SetParent(parent.transform);
             go.transform.localPosition = zero;
             go.layer = 10;
@@ -183,20 +159,35 @@ public class Chunk
         }
         else
         {
-            mesh = meshes[index];
+            if (!isCollider) mesh = meshes[index];
+            else mesh = new Mesh();
+
             go = meshHolders[index];
         }
 
         mesh.Clear();
         mesh.vertices = verts;
         mesh.triangles = tris;
-        mesh.uv = uv;
-        mesh.RecalculateNormals();
-        mesh.Optimize();
 
-        go.GetComponent<MeshFilter>().mesh = mesh;
-        if (!meshTexture) go.GetComponent<MeshRenderer>().material = Game.material;
-        else go.GetComponent<MeshRenderer>().material = Game.materialMesh;
+        if (!isCollider)
+        {
+            mesh.uv = uv;
+            mesh.RecalculateNormals();
+        }
+        mesh.Optimize(); //TODO ??
+
+        if (isCollider)
+        {
+            MeshCollider mc = go.GetComponent<MeshCollider>();
+            if (mc == null) mc = go.AddComponent<MeshCollider>();
+
+            mc.sharedMesh = mesh;
+        }
+        else
+        {
+            go.GetComponent<MeshFilter>().mesh = mesh;
+            go.GetComponent<MeshRenderer>().material = Game.material;
+        }
     }
 
     static class MeshCreator
@@ -208,25 +199,21 @@ public class Chunk
         static List<Vector3>[] vertss;
         static List<int>[] triss;
         static List<Vector2>[] uvss;
+        static int indx;
 
-        static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, int sizeY)
+        public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, int sizeY)
         {
-            tris.Clear();
-            verts.Clear();
-            uv.Clear();
-
-            Block tb;
-            MultimodelComponent mmc;
-            int meshIndex = 0;
-            Vector3 coords = new Vector3();
-            bool xb, xbn, zb, zbn;
-
             vertss = new List<Vector3>[maxX];
             triss = new List<int>[maxX];
             uvss = new List<Vector2>[maxX];
 
-            Parallel.For(0, maxX, (x, _) =>
+            Parallel.For(0, maxX, (int x, ParallelLoopState _) =>
             {
+                Vector3 coords = new Vector3();
+                bool xb, xbn, zb, zbn;
+                MultimodelComponent mmc;
+                Block tb;
+
                 vertss[x] = new List<Vector3>();
                 triss[x] = new List<int>();
                 uvss[x] = new List<Vector2>();
@@ -253,125 +240,80 @@ public class Chunk
                                 if (xb && xbn && zb && zbn) // +
                                 {
                                     foreach (int v in mmc.center.triangles)
-                                        trisM.Add(v + vertsM.Count);
-                                    uvM.AddRange(Game.TextureMeshUvs[mmc.center.name]);
-                                    foreach (Vector3 v in mmc.center.vertices) vertsM.Add(v + coords);
+                                        triss[x].Add(v + vertss[x].Count);
+                                    uvss[x].AddRange(Game.TextureMeshUvs[mmc.center.name]);
+                                    foreach (Vector3 v in mmc.center.vertices) vertss[x].Add(v + coords);
                                 }
                                 else if ((xb && xbn && zb) || (xb && xbn && zbn) || (xb && zb && zbn) || (xbn && zb && zbn)) // т
                                 {
                                     foreach (int v in mmc.side.triangles)
-                                        trisM.Add(v + vertsM.Count);
-                                    uvM.AddRange(Game.TextureMeshUvs[mmc.side.name]);
+                                        triss[x].Add(v + vertss[x].Count);
+                                    uvss[x].AddRange(Game.TextureMeshUvs[mmc.side.name]);
 
                                     if (!xb)
-                                        foreach (Vector3 v in mmc.side.vertices) vertsM.Add(v + coords);
+                                        foreach (Vector3 v in mmc.side.vertices) vertss[x].Add(v + coords);
                                     else if (!xbn)
-                                        foreach (Vector3 v in mmc.side.vertices) vertsM.Add(angle2 * v + coords);
+                                        foreach (Vector3 v in mmc.side.vertices) vertss[x].Add(angle2 * v + coords);
                                     else if (!zb)
-                                        foreach (Vector3 v in mmc.side.vertices) vertsM.Add(angle3 * v + coords);
+                                        foreach (Vector3 v in mmc.side.vertices) vertss[x].Add(angle3 * v + coords);
                                     else if (!zbn)
-                                        foreach (Vector3 v in mmc.side.vertices) vertsM.Add(angle1 * v + coords);
+                                        foreach (Vector3 v in mmc.side.vertices) vertss[x].Add(angle1 * v + coords);
                                 }
                                 else if ((xb && zb) || (xb && zbn) || (xbn && zb) || (xbn && zbn)) // г
                                 {
                                     foreach (int v in mmc.corner.triangles)
-                                        trisM.Add(v + vertsM.Count);
-                                    uvM.AddRange(Game.TextureMeshUvs[mmc.corner.name]);
+                                        triss[x].Add(v + vertss[x].Count);
+                                    uvss[x].AddRange(Game.TextureMeshUvs[mmc.corner.name]);
 
                                     if (xb && zb)
-                                        foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(angle1 * v + coords);
+                                        foreach (Vector3 v in mmc.corner.vertices) vertss[x].Add(angle1 * v + coords);
                                     else if (zb && xbn)
-                                        foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(v + coords);
+                                        foreach (Vector3 v in mmc.corner.vertices) vertss[x].Add(v + coords);
                                     else if (xbn && zbn)
-                                        foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(angle3 * v + coords);
+                                        foreach (Vector3 v in mmc.corner.vertices) vertss[x].Add(angle3 * v + coords);
                                     else if (zbn && xb)
-                                        foreach (Vector3 v in mmc.corner.vertices) vertsM.Add(angle2 * v + coords);
+                                        foreach (Vector3 v in mmc.corner.vertices) vertss[x].Add(angle2 * v + coords);
                                 }
                                 else // -
                                 {
                                     foreach (int v in tb.Info.mesh.triangles)
-                                        trisM.Add(v + vertsM.Count);
-                                    uvM.AddRange(tb.Info.uvs);
+                                        triss[x].Add(v + vertss[x].Count);
+                                    uvss[x].AddRange(tb.Info.uvs);
 
                                     if (xb || xbn)
-                                        foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(v + coords);
+                                        foreach (Vector3 v in tb.Info.mesh.vertices) vertss[x].Add(v + coords);
                                     else if (zb || zbn)
-                                        foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle1 * v + coords);
+                                        foreach (Vector3 v in tb.Info.mesh.vertices) vertss[x].Add(angle1 * v + coords);
                                 }
                             }
                             else
                             {
                                 foreach (int v in tb.Info.mesh.triangles)
-                                    trisM.Add(v + vertsM.Count);
+                                    triss[x].Add(v + vertss[x].Count);
 
-                                uvM.AddRange(tb.Info.uvs);
+                                uvss[x].AddRange(tb.Info.uvs);
 
                                 if (tb.Rotation == 0)
-                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(v + coords);
+                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertss[x].Add(v + coords);
                                 else if (tb.Rotation == 1)
-                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle1 * v + coords);
+                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertss[x].Add(angle1 * v + coords);
                                 else if (tb.Rotation == 2)
-                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle2 * v + coords);
+                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertss[x].Add(angle2 * v + coords);
                                 else if (tb.Rotation == 3)
-                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertsM.Add(angle3 * v + coords);
+                                    foreach (Vector3 v in tb.Info.mesh.vertices) vertss[x].Add(angle3 * v + coords);
                             }
                         }
-                        else
-                        {
-                            if (tb.Info.IsTransparent)
-                            {
-                                AddCubeMesh(Sides.Left, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                                AddCubeMesh(Sides.Right, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-
-                                AddCubeMesh(Sides.Top, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                                AddCubeMesh(Sides.Bottom, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-
-                                AddCubeMesh(Sides.Front, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                                AddCubeMesh(Sides.Back, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                            }
-                            else
-                            {
-                                if (istr(x, y, z + 1)) AddCubeMesh(Sides.Front, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                                if (istr(x, y, z - 1)) AddCubeMesh(Sides.Back, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-
-                                if (istr(x, y + 1, z)) AddCubeMesh(Sides.Top, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                                if (istr(x, y - 1, z)) AddCubeMesh(Sides.Bottom, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-
-                                if (istr(x + 1, y, z)) AddCubeMesh(Sides.Right, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                                if (istr(x - 1, y, z)) AddCubeMesh(Sides.Left, x, y, z, tb.Info.uvs, vertss[x], triss[x], uvss[x]);
-                            }
-                        }
+                        else AddCube(x, y, z, tb.Info.IsTransparent, tb.Info.uvs, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null || c.GetBlock(_x, _y, _z).Info.IsTransparent);
                     }
                 }
             });
 
-            bool istr(int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null || c.GetBlock(_x, _y, _z).Info.IsTransparent;
-            bool isbl(int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null;
+            int meshIndex = 0;
             bool isgl(int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) != null && c.GetBlock(_x, _y, _z).Info == Block.GlassPane;
-            void setm(int startve, int endve, int starttr, int endtr, bool isMesh = false)
-            {
-                if (isMesh) SetMesh(vertsM.GetRange(startve, endve).ToArray(), trisM.GetRange(starttr, endtr).ToArray(), uvM.GetRange(startve, endve).ToArray(), meshIndex++, true);
-                else SetMesh(verts.GetRange(startve, endve).ToArray(), tris.GetRange(starttr, endtr).ToArray(), uv.GetRange(startve, endve).ToArray(), meshIndex++);
-            }
+            void setm(int sve, int eve, int str, int etr) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshIndex++, false);
+            void setmc(int sve, int eve, int str, int etr) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), null, meshIndex++, true);
 
-            int indx = 0;
-            for (int i = 0; i < vertss.Length; i++)
-            {
-                verts.AddRange(vertss[i]);
-                uv.AddRange(uvss[i]);
-
-                for (int j = 0; j < triss[i].Count; j += 6)
-                {
-                    tris.Add(triss[i][j] + indx);
-                    tris.Add(triss[i][j + 1] + indx);
-                    tris.Add(triss[i][j + 2] + indx);
-                    tris.Add(triss[i][j + 3] + indx);
-                    tris.Add(triss[i][j + 4] + indx);
-                    tris.Add(triss[i][j + 5] + indx);
-
-                    indx += 4;
-                }
-            }
+            CombineArrays();
 
             int ve, tr;
             for (int i = 0; true; i++)
@@ -386,76 +328,109 @@ public class Chunk
                 }
                 else setm(ve, 65499, tr, 21883);
             }
+
+            // Mesh Collider
+
+            Parallel.For(0, maxX, (int x, ParallelLoopState _) =>
+            {
+                vertss[x] = new List<Vector3>();
+                triss[x] = new List<int>();
+                uvss[x] = new List<Vector2>();
+
+                for (int y = 0; y < sizeY; y++)
+                    for (int z = 0; z < maxZ; z++)
+                        if (Blocks[y][x, z] != null)
+                            AddCube(x, y, z, false, null, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null);
+            });
+
+            CombineArrays();
+
+            meshIndex = 0;
             for (int i = 0; true; i++)
             {
                 ve = i * 65499;
                 tr = i * 21883;
 
-                if ((i + 1) * 65499 > vertsM.Count)
+                if ((i + 1) * 65499 > verts.Count)
                 {
-                    setm(ve, ve + vertsM.Count, tr, tr + trisM.Count, true);
+                    setmc(ve, ve + verts.Count, tr, tr + tris.Count);
                     break;
                 }
-                else setm(ve, 65499, tr, 21883, true);
+                else setmc(ve, 65499, tr, 21883);
             }
 
-            #region MESH COLLIDER
+            /// Mesh Collider
+        }
+        static void AddCube(int x, int y, int z, bool isTransparent, Vector2[] uvs, Chunk c, Func<int, int, int, bool> isBlockFunc)
+        {
+            if (isTransparent)
+            {
+                AddCubeMesh(Sides.Left, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+                AddCubeMesh(Sides.Right, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
 
+                AddCubeMesh(Sides.Top, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+                AddCubeMesh(Sides.Bottom, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+
+                AddCubeMesh(Sides.Front, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+                AddCubeMesh(Sides.Back, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            }
+            else
+            {
+                if (isBlockFunc(x, y, z + 1)) AddCubeMesh(Sides.Front, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+                if (isBlockFunc(x, y, z - 1)) AddCubeMesh(Sides.Back, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+
+                if (isBlockFunc(x, y + 1, z)) AddCubeMesh(Sides.Top, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+                if (isBlockFunc(x, y - 1, z)) AddCubeMesh(Sides.Bottom, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+
+                if (isBlockFunc(x + 1, y, z)) AddCubeMesh(Sides.Right, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+                if (isBlockFunc(x - 1, y, z)) AddCubeMesh(Sides.Left, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            }
+        }
+        static void AddCubeMesh(Sides side, int x, int y, int z, Vector2[] uvs, List<Vector3> verts, List<int> tris, List<Vector2> uv)
+        {
+            int index = verts.Count;
+            var adds = CubeMeshes[side];
+
+            verts.Add(new Vector3(x + adds.X[0], y + adds.Y[0], z + adds.Z[0]));
+            verts.Add(new Vector3(x + adds.X[1], y + adds.Y[1], z + adds.Z[1]));
+            verts.Add(new Vector3(x + adds.X[2], y + adds.Y[2], z + adds.Z[2]));
+            verts.Add(new Vector3(x + adds.X[3], y + adds.Y[3], z + adds.Z[3]));
+
+            tris.Add(index);
+            tris.Add(index + 1);
+            tris.Add(index + 2);
+            tris.Add(index);
+            tris.Add(index + 2);
+            tris.Add(index + 3);
+
+            if (uvs != null)
+            {
+                uv.Add(uvs[0]);
+                uv.Add(uvs[1]);
+                uv.Add(uvs[2]);
+                uv.Add(uvs[3]);
+            }
+        }
+        static void CombineArrays()
+        {
             tris.Clear();
             verts.Clear();
             uv.Clear();
 
-            int index = 0;
-            Mesh mesh;
-
-            for (int x = 0; x < maxX; x++)
-                for (int y = 0; y < sizeY; y++)
-                    for (int z = 0; z < maxZ; z++)
-                    {
-                        if (verts.Count > 65300)
-                        {
-                            mesh = new Mesh();
-
-                            mesh.vertices = verts.ToArray();
-                            mesh.triangles = tris.ToArray();
-                            mesh.uv = uv.ToArray();
-                            mesh.RecalculateNormals();
-                            meshHolders[index++].GetComponent<MeshCollider>().sharedMesh = mesh;
-
-                            tris.Clear();
-                            verts.Clear();
-                            uv.Clear();
-                        }
-
-                        if (!isbl(x, y, z))
-                        {
-                            if (istr(x, y, z + 1)) AddCubeMesh(Sides.Front, x, y, z, null, verts, tris, uv);
-                            if (istr(x, y, z - 1)) AddCubeMesh(Sides.Back, x, y, z, null, verts, tris, uv);
-
-                            if (istr(x, y + 1, z)) AddCubeMesh(Sides.Top, x, y, z, null, verts, tris, uv);
-                            if (istr(x, y - 1, z)) AddCubeMesh(Sides.Bottom, x, y, z, null, verts, tris, uv);
-
-                            if (istr(x + 1, y, z)) AddCubeMesh(Sides.Right, x, y, z, null, verts, tris, uv);
-                            if (istr(x - 1, y, z)) AddCubeMesh(Sides.Left, x, y, z, null, verts, tris, uv);
-                        }
-                    }
-
-            mesh = new Mesh();
-            mesh.vertices = verts.ToArray();
-            mesh.triangles = tris.ToArray();
-            mesh.uv = uv.ToArray();
-            mesh.RecalculateNormals();
-            mesh.Optimize();
-            meshHolders[index].GetComponent<MeshCollider>().sharedMesh = mesh;
-
-            for (int i = meshIndex; i < meshes.Count; i++)
+            for (int i = 0; i < vertss.Length; i++)
             {
-                meshes[i].Clear();
-                meshHolders[i].GetComponent<MeshFilter>().mesh = meshes[i];
-            }
-            #endregion
-        }
+                indx = verts.Count;
+                verts.AddRange(vertss[i]);
+                uv.AddRange(uvss[i]);
 
+                for (int j = 0; j < triss[i].Count; j += 3)
+                {
+                    tris.Add(triss[i][j] + indx);
+                    tris.Add(triss[i][j + 1] + indx);
+                    tris.Add(triss[i][j + 2] + indx);
+                }
+            }
+        }
     }
 }
 public enum Sides

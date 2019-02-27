@@ -13,7 +13,8 @@ public class Game : MonoBehaviour
     public static Dictionary<string, Rect> TextureRects = new Dictionary<string, Rect>();
     public static Dictionary<string, Vector2[]> TextureMeshUvs = new Dictionary<string, Vector2[]>();
     public static Dictionary<string, Mesh> Meshes = new Dictionary<string, Mesh>();
-    public static Texture2D Atlas, AtlasMesh;
+    public static Texture2D Atlas;
+    public static Material material;
     public static bool Building = false;
     public static int Money { get => _money; set { _money = value; game.textMoney.text = "money: " + value.ToString(); } }
     public static int Villagers { get => _villagers; set { _villagers = value; game.textVillagers.text = "villagers: " + value.ToString(); } }
@@ -38,7 +39,6 @@ public class Game : MonoBehaviour
             game.textLevel.text = "level: " + value.ToString();
         }
     }
-    public static Material material, materialMesh;
     public static World world;
     public static GameObject buildingChooser;
     public static List<Building> Buildings = new List<Building>();
@@ -66,37 +66,33 @@ public class Game : MonoBehaviour
         Atlas.filterMode = FilterMode.Point;
         Atlas.wrapMode = TextureWrapMode.Repeat;
 
-        Texture2D[] textures = Resources.LoadAll<Texture2D>("Textures");
-        Texture2D[] texturesMesh = Resources.LoadAll<Texture2D>("TexturesMesh");
+        Texture2D[] texturesBlocks = Resources.LoadAll<Texture2D>("Textures");
+        Texture2D[] texturesMeshes = Resources.LoadAll<Texture2D>("TexturesMesh");
+        Texture2D[] textures = new Texture2D[texturesBlocks.Length + texturesMeshes.Length];
+        texturesBlocks.CopyTo(textures, 0);
+        texturesMeshes.CopyTo(textures, texturesBlocks.Length);
+
         Mesh[] meshes = Resources.LoadAll<Mesh>("Models");
 
         Rect[] rects = Atlas.PackTextures(textures, 0);
-        for (int i = 0; i < textures.Length; i++)
-            TextureRects.Add(textures[i].name, rects[i]);
-
-        AtlasMesh = new Texture2D(1, 1);
-        AtlasMesh.filterMode = FilterMode.Point;
-        AtlasMesh.wrapMode = TextureWrapMode.Repeat;
-
-        rects = AtlasMesh.PackTextures(texturesMesh, 0);
+        for (int i = 0; i < texturesBlocks.Length; i++)
+            TextureRects.Add(texturesBlocks[i].name, rects[i]);
 
         List<Vector2> uvlist = new List<Vector2>();
-        for (int i = 0; i < meshes.Length; i++)
+        for (int i = 0; i < texturesMeshes.Length; i++)
         {
             for (int j = 0; j < meshes[i].uv.Length; j++)
                 uvlist.Add(new Vector2(meshes[i].uv[j].x * rects[i].width + rects[i].xMin, meshes[i].uv[j].y * rects[i].height + rects[i].yMin));
 
-            TextureMeshUvs.Add(texturesMesh[i].name, uvlist.ToArray());
+            TextureMeshUvs.Add(texturesMeshes[i].name, uvlist.ToArray());
             uvlist.Clear();
 
-            Meshes.Add(texturesMesh[i].name, meshes[i]);
-            meshes[i].name = texturesMesh[i].name;
+            Meshes.Add(texturesMeshes[i].name, meshes[i]);
+            meshes[i].name = texturesMeshes[i].name;
         }
 
         material = mat;
         material.mainTexture = Atlas;
-        materialMesh = matMesh;
-        materialMesh.mainTexture = AtlasMesh;
 
         Meshes.Add("transparent", new Mesh());
         TextureMeshUvs.Add("transparent", new Vector2[] { });

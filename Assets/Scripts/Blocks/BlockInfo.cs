@@ -8,7 +8,7 @@ public class BlockInfo
     public int Price { get; protected set; }
     public bool IsTransparent { get; protected set; }
     public Vector2[] uvs { get; protected set; } // 0-3 left  4-7 right  8-11 top  12-15 bottom  16-19 front  20-23 back
-    public Mesh mesh { get; protected set; } = null;
+    public DeloMesh mesh { get; protected set; } = null;
     protected Dictionary<Type, object[]> Components = new Dictionary<Type, object[]>();
     protected Block _instance = null;
 
@@ -93,10 +93,10 @@ public class BlockInfoMesh : BlockInfo
         this.Name = name;
         this.uvs = Game.TextureMeshUvs[name];
         this.IsTransparent = true;
-        this.mesh = Game.Meshes[name];
+        this.mesh = new DeloMesh(Game.Meshes[name]);
         Price = price;
 
-        Vector3 sizef = mesh.bounds.max - mesh.bounds.min;
+        Vector3 sizef = mesh.mesh.bounds.max - mesh.mesh.bounds.min;
         Vector3Int size = new Vector3Int(Mathf.CeilToInt(sizef.x), Mathf.CeilToInt(sizef.y), Mathf.CeilToInt(sizef.z));
 
         if (size.x > 1 || size.y > 1 || size.z > 1)
