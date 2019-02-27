@@ -174,7 +174,7 @@ public class Chunk
             mesh.uv = uv;
             mesh.RecalculateNormals();
         }
-        mesh.Optimize(); //TODO ??
+        mesh.Optimize(); //TODO what is this
 
         if (isCollider)
         {
