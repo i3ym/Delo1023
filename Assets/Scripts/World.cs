@@ -14,16 +14,22 @@ public class World : MonoBehaviour
 
     [HideInInspector]
     public Builder builder;
-    Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
-    List<Chunk> SelectedChunks = new List<Chunk>();
-    RaycastHit hit;
-    int layerMask;
-    new Transform camera;
+    static Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
+    static List<Chunk> SelectedChunks = new List<Chunk>();
+    static RaycastHit hit;
+    static int layerMask;
+    new static Transform camera;
+    static System.Random rnd = new System.Random();
 
     Chunk tempchunk;
 
     void Start()
     {
+        for (int i = 0; i < 100; i++)
+        {
+            Debug.Log(i + " LEVEL: " + (1800 - Math.Min(100, i) * 15)); //TODO remove
+        }
+
         Game.world = this;
         camera = Game.camera.transform;
 
@@ -31,6 +37,7 @@ public class World : MonoBehaviour
         layerMask = LayerMask.GetMask("Chunk");
         Game.buildingChooser.SetActive(false);
 
+        StartCoroutine(AddVillagersCoroutine());
         StartCoroutine(CreateChunksCoroutine());
     }
     void Update()
@@ -40,6 +47,15 @@ public class World : MonoBehaviour
         SelectChunk();
     }
 
+    IEnumerator AddVillagersCoroutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(rnd.Next(3, 18 - Math.Min(100, Game.Level) * 15)); //TODO dont forget to 300 and 1800
+
+            if (Game.Villagers < Game.VillagersMax) Game.Villagers++;
+        }
+    }
     IEnumerator CreateChunksCoroutine()
     {
         for (int x = 0; x < sizeX; x++)

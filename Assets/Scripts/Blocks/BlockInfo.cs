@@ -102,7 +102,7 @@ public class BlockInfoMesh : BlockInfo
                     for (int z = 0; z < size.z; z++)
                         args.Add(new Vector3Int(x, y, z));
 
-            components.Add(typeof(MultiblockComponent), new object[] { args.ToArray() });
+            components.Add(typeof(MultiblockComponent), new object[] { args.ToArray(), this });
         }
 
         Builder.Blocks.Add(this);

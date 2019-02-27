@@ -111,8 +111,10 @@ public class Builder : MonoBehaviour
     {
         if (Physics.Raycast(camera.position, camera.forward, out hit, 500f, layerMask))
         {
+            MultiblockPartComponent mpc = world.GetBlock((int) (hit.point.x - hit.normal.x * .01f), (int) (hit.point.y - hit.normal.y * .01f), (int) (hit.point.z - hit.normal.z * .01f)).GetComponent<MultiblockPartComponent>();
+            if (mpc != null) Game.Money += mpc.parentBlock.Price;
+            else Game.Money += Blocks[selectedBlock].Price;
             world.RemoveBlock((int) (hit.point.x - hit.normal.x * .01f), (int) (hit.point.y - hit.normal.y * .01f), (int) (hit.point.z - hit.normal.z * .01f));
-            Game.Money += Blocks[selectedBlock].Price;
         }
     }
 

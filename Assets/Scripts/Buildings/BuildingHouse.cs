@@ -11,7 +11,7 @@ public class BuildingHouse : Building
 
     protected override void Recalc()
     {
-        Game.Villagers -= Villagers;
+        Game.VillagersMax -= Villagers;
         Villagers = 0;
 
         foreach (Chunk c in Chunks)
@@ -21,6 +21,6 @@ public class BuildingHouse : Building
                     for (int z = 0; z < Chunk.maxZ; z++)
                         if (c.GetBlock(x, y, z)?.Info == Block.Bed) Villagers++;
         }
-        Game.Villagers += Villagers;
+        Game.VillagersMax += Villagers;
     }
 }

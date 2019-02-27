@@ -3,22 +3,24 @@ using UnityEngine;
 public class MultiblockComponent : BComponent
 {
     public Vector3Int[] Locations { get; private set; }
+    BlockInfo parentBlock;
 
-    public MultiblockComponent(params Vector3Int[] locations)
+    public MultiblockComponent(Vector3Int[] locations, BlockInfo parentBlock)
     {
         Locations = new Vector3Int[locations.Length];
         locations.CopyTo(Locations, 0);
+        this.parentBlock = parentBlock;
     }
 
     public override bool OnPlace(int x, int y, int z, int rot)
     {
         Block b = Block.Transparent.Instance();
-        b.AddComponent<MultiblockPartComponent>(x, y, z);
+        b.AddComponent<MultiblockPartComponent>(x, y, z, parentBlock);
 
         bool canPlaceThis;
         Chunk chunk;
 
-        foreach (Vector3Int pos in Locations)
+        foreach (Vector3Int pos in Locations) //TODO do better
         {
             if (pos.x + x < 0 || pos.x + x > World.sizeX * Chunk.maxX - 1 || pos.z + z < 0 || pos.z + z > World.sizeZ * Chunk.maxZ - 1 || Game.world.GetBlock(x + pos.x, y + pos.y, z + pos.z) != null) return false;
 
