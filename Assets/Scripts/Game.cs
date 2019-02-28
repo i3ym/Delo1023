@@ -16,6 +16,11 @@ public class Game : MonoBehaviour
     public static Texture2D Atlas;
     public static Material material;
     public static bool Building = false;
+    public static World world;
+    public static GameObject buildingChooser;
+    public static List<Building> Buildings = new List<Building>();
+    static Game game = null;
+
     public static int Money { get => _money; set { _money = value; game.textMoney.text = "money: " + value.ToString(); } }
     public static int Villagers { get => _villagers; set { _villagers = value; game.textVillagers.text = "villagers: " + value.ToString(); } }
     public static int VillagersMax { get => _villagersMax; set { _villagersMax = value; Villagers = Math.Min(VillagersMax, Villagers); game.textVillagersMax.text = "villagersMax: " + value.ToString(); } }
@@ -40,10 +45,6 @@ public class Game : MonoBehaviour
             game.textLevel.text = "level: " + value.ToString();
         }
     }
-    public static World world;
-    public static GameObject buildingChooser;
-    public static List<Building> Buildings = new List<Building>();
-    static Game game = null;
     static int _money = 0, _villagers = 0, _level = 0, _exp = 0, _villagersMax;
 
     [SerializeField]

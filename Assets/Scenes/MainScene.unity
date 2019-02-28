@@ -1135,7 +1135,7 @@ MonoBehaviour:
   textVillagers: {fileID: 441144341}
   textLevel: {fileID: 808806267}
   textExp: {fileID: 1402558280}
-  textVillagersMax: {fileID: 0}
+  textVillagersMax: {fileID: 1359405262}
   sliderExp: {fileID: 219307731}
 --- !u!114 &534669908
 MonoBehaviour:
@@ -1199,7 +1199,7 @@ MonoBehaviour:
     m_Bits: 256
   stopNaNPropagation: 1
   finalBlitToCameraTarget: 1
-  antialiasingMode: 2
+  antialiasingMode: 3
   temporalAntialiasing:
     jitterSpread: 0.75
     sharpness: 0.25

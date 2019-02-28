@@ -25,11 +25,6 @@ public class World : MonoBehaviour
 
     void Start()
     {
-        for (int i = 0; i < 100; i++)
-        {
-            Debug.Log(i + " LEVEL: " + (1800 - Math.Min(100, i) * 15)); //TODO remove
-        }
-
         Game.world = this;
         camera = Game.camera.transform;
 

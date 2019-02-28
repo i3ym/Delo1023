@@ -9,6 +9,7 @@ public class Block
     public static readonly BlockInfo Transparent;
     public static readonly BlockInfo Grass;
     public static readonly BlockInfo Dirt;
+    public static readonly BlockInfo Planks;
     public static readonly BlockInfo Bricks;
     public static readonly BlockInfo Door;
     public static readonly BlockInfo Trumpet;
@@ -28,6 +29,7 @@ public class Block
 
         Grass = new BlockInfo("grass", new string[] { "dirt", "dirt", "grass", "dirt", "dirt", "dirt" }, false, price : 0);
         Dirt = new BlockInfo("dirt", price : 0);
+        Planks = new BlockInfo("planks", price : 10);
         Bricks = new BlockInfo("bricks", price : 10);
         Door = new BlockInfoMesh("door");
         Trumpet = new BlockInfoMesh("trumpet");

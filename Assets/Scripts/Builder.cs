@@ -79,12 +79,12 @@ public class Builder : MonoBehaviour
         if (tempScroll > 0 || Input.GetKeyDown(KeyCode.Alpha2))
         {
             if (++selectedBlock >= Blocks.Count) selectedBlock = 0;
-            TextSelectedBlock.text = "Selected: " + selectedBlock;
+            TextSelectedBlock.text = "Selected: " + Blocks[selectedBlock].Name;
         }
         else if (tempScroll < 0 || Input.GetKeyDown(KeyCode.Alpha1))
         {
             if (--selectedBlock < 0) selectedBlock = Blocks.Count - 1;
-            TextSelectedBlock.text = "Selected: " + selectedBlock;
+            TextSelectedBlock.text = "Selected: " + Blocks[selectedBlock].Name;
         }
     }
     void PlaceBlock()
