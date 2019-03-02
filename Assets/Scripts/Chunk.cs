@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class Chunk
 {
@@ -18,6 +20,7 @@ public class Chunk
     List<Mesh> meshes = new List<Mesh>();
     List<GameObject> meshHolders = new List<GameObject>();
     readonly Vector3 zero = Vector3.zero;
+    Thread meshUpdateThread;
 
     public static Quaternion angle1, angle2, angle3;
     public static readonly Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > CubeMeshes = new Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > ();
@@ -36,7 +39,6 @@ public class Chunk
 
         CubeMeshes.Add(Sides.Front, (new sbyte[] { 1, 1, 0, 0 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 1, 1, 1, 1 }));
         CubeMeshes.Add(Sides.Back, (new sbyte[] { 0, 0, 1, 1 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 0, 0, 0, 0 }));
-
     }
     public Chunk(int x, int z, World w)
     {
@@ -73,7 +75,7 @@ public class Chunk
 
         return price;
     }
-    public bool SetBlock(int x, int y, int z, Block b, bool update = true)
+    public bool SetBlock(int x, int y, int z, Block b, bool update = true, bool updateFast = false)
     {
         while (y >= sizeY)
         {
@@ -102,7 +104,18 @@ public class Chunk
         {
             Blocks[y][x, z] = b;
 
-            if (update) MeshCreator.UpdateMesh(this, Blocks, sizeY);
+            if (update)
+            {
+                if (updateFast)
+                {
+                    if (meshUpdateThread != null && meshUpdateThread.IsAlive) meshUpdateThread.Interrupt();
+
+                    MeshCreator.UpdateMeshFast(this, x, y, z, meshes[meshes.Count - 1], meshes.Count - 1, b);
+                    meshUpdateThread = new Thread(() => MeshCreator.UpdateMesh(this, Blocks, sizeY, false));
+                    meshUpdateThread.Start();
+                }
+                else MeshCreator.UpdateMesh(this, Blocks, sizeY);
+            }
             return true;
         }
 
@@ -130,12 +143,18 @@ public class Chunk
     public Block GetBlock(int x, int y, int z)
     {
         if (y < 0 || y >= sizeY) return null;
-        if (x < 0 || x > maxX - 1 || z < 0 || z > maxX - 1) return null; //TODO ? return world.GetBlock(x * maxX, y, z * maxZ);
+        if (x < 0 || x > maxX - 1 || z < 0 || z > maxX - 1) return null;
 
         return Blocks[y][x, z];
     }
-    public void SetMesh(Vector3[] verts, int[] tris, Vector2[] uv, int index, bool isCollider)
+    public void SetMesh(Vector3[] verts, int[] tris, Vector2[] uv, int index, bool isCollider, bool isMainThread = true)
     {
+        if (!isMainThread)
+        {
+            world.Invoke(() => SetMesh(verts, tris, uv, index, isCollider));
+            return;
+        }
+
         Mesh mesh;
         GameObject go;
 
@@ -149,6 +168,7 @@ public class Chunk
             {
                 go.AddComponent<MeshFilter>().mesh = mesh;
                 go.AddComponent<MeshRenderer>().material = Game.material;
+                go.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.TwoSided;
             }
 
             go.transform.SetParent(parent.transform);

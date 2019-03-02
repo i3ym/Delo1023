@@ -20,6 +20,8 @@ public class World : MonoBehaviour
     static int layerMask;
     new static Transform camera;
     static System.Random rnd = new System.Random();
+    static List<Action> Actions = new List<Action>();
+    static bool invoke = false;
 
     Chunk tempchunk;
 
@@ -37,6 +39,12 @@ public class World : MonoBehaviour
     }
     void Update()
     {
+        if (invoke)
+        {
+            invoke = false;
+            foreach (Action action in Actions) action();
+        }
+
         if (Game.Building) return;
 
         SelectChunk();
@@ -61,6 +69,11 @@ public class World : MonoBehaviour
             }
     }
 
+    public void Invoke(Action action)
+    {
+        Actions.Add(action);
+        invoke = true;
+    }
     void SelectChunk()
     {
         if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
@@ -170,11 +183,11 @@ public class World : MonoBehaviour
         builder.enabled = true;
     }
 
-    public bool SetBlock(int x, int y, int z, Block b)
+    public bool SetBlock(int x, int y, int z, Block b, bool updatefast = false)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return false;
 
-        return Chunks[x / Chunk.maxX, z / Chunk.maxZ].SetBlock(x % Chunk.maxX, y, z % Chunk.maxZ, b);
+        return Chunks[x / Chunk.maxX, z / Chunk.maxZ].SetBlock(x % Chunk.maxX, y, z % Chunk.maxZ, b, updateFast : updatefast);
     }
     public void RemoveBlock(int x, int y, int z, bool shootEvent = true)
     {

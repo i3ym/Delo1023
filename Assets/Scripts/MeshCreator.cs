@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -16,7 +17,33 @@ static class MeshCreator
     static List<Vector2>[] uvss;
     static int indx;
 
-    public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, int sizeY)
+    public static void UpdateMeshFast(Chunk c, int x, int y, int z, Mesh mesh, int meshIndex, Block block) //TODO optimize
+    {
+        vertss[x] = new List<Vector3>(mesh.vertices);
+        triss[x] = new List<int>(mesh.triangles);
+        uvss[x] = new List<Vector2>(mesh.uv);
+
+        AddCube(x, y, z, block.Info.IsTransparent, block.Info.uvs, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null || c.GetBlock(_x, _y, _z).Info.IsTransparent);
+
+        verts = vertss[x];
+        tris = triss[x];
+        uv = uvss[x];
+
+        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshInd, false), meshIndex);
+
+        vertss[x] = new List<Vector3>(mesh.vertices);
+        triss[x] = new List<int>(mesh.triangles);
+        uvss[x] = new List<Vector2>();
+
+        AddCube(x, y, z, false, null, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null);
+
+        verts = vertss[x];
+        tris = triss[x];
+        uv = uvss[x];
+
+        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), null, meshInd, true), meshIndex);
+    }
+    public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, int sizeY, bool isMainThread = true)
     {
         vertss = new List<Vector3>[Chunk.maxX];
         triss = new List<int>[Chunk.maxX];
@@ -47,7 +74,7 @@ static class MeshCreator
         });
 
         CombineArrays();
-        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshInd, false));
+        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshInd, false, isMainThread));
 
         // Mesh Collider
 
@@ -64,13 +91,12 @@ static class MeshCreator
         });
 
         CombineArrays();
-        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), null, meshInd, true));
+        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), null, meshInd, true, isMainThread));
 
         /// Mesh Collider
     }
-    static void DivideMeshesAndSet(Action<int, int, int, int, int> setm)
+    static void DivideMeshesAndSet(Action<int, int, int, int, int> setm, int meshIndex = 0)
     {
-        int meshIndex = 0;
         int ve, tr;
 
         for (int i = 0; true; i++)

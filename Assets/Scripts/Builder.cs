@@ -10,8 +10,6 @@ public class Builder : MonoBehaviour
 {
     public const string MouseScroll = "Mouse ScrollWheel";
 
-    public static List<BlockInfo> Blocks = new List<BlockInfo>();
-
     [SerializeField]
     TextMeshProUGUI TextSelectedBlock;
     [SerializeField]
@@ -20,6 +18,8 @@ public class Builder : MonoBehaviour
     Button ButtonContinue, ButtonExit;
     [SerializeField]
     World world;
+    [SerializeField]
+    BlockChooser blockChooser;
 
     [HideInInspector]
     public Vector3 OldCameraPosition;
@@ -78,13 +78,17 @@ public class Builder : MonoBehaviour
 
         if (tempScroll > 0 || Input.GetKeyDown(KeyCode.Alpha2))
         {
-            if (++selectedBlock >= Blocks.Count) selectedBlock = 0;
-            TextSelectedBlock.text = "Selected: " + Blocks[selectedBlock].Name;
+            if (++selectedBlock >= Block.Blocks.Count) selectedBlock = 0;
+            blockChooser.ChangeSelected(selectedBlock);
+
+            TextSelectedBlock.text = "Selected: " + selectedBlock;
         }
         else if (tempScroll < 0 || Input.GetKeyDown(KeyCode.Alpha1))
         {
-            if (--selectedBlock < 0) selectedBlock = Blocks.Count - 1;
-            TextSelectedBlock.text = "Selected: " + Blocks[selectedBlock].Name;
+            if (--selectedBlock < 0) selectedBlock = Block.Blocks.Count - 1;
+            blockChooser.ChangeSelected(selectedBlock);
+
+            TextSelectedBlock.text = "Selected: " + selectedBlock;
         }
     }
     void PlaceBlock()
@@ -98,10 +102,10 @@ public class Builder : MonoBehaviour
             foreach (Chunk c in building.Chunks)
                 if (c == world.GetChunk(x, z))
                 {
-                    if (Game.Money - Blocks[selectedBlock].Price >= 0)
+                    if (Game.Money - Block.Blocks[selectedBlock].Price >= 0)
                     {
-                        if (world.SetBlock(x, y, z, Blocks[selectedBlock].Instance()))
-                            Game.Money -= Blocks[selectedBlock].Price;
+                        if (world.SetBlock(x, y, z, Block.Blocks[selectedBlock].Instance()))
+                            Game.Money -= Block.Blocks[selectedBlock].Price;
                     }
                     break;
                 }
@@ -113,7 +117,7 @@ public class Builder : MonoBehaviour
         {
             MultiblockPartComponent mpc = world.GetBlock((int) (hit.point.x - hit.normal.x * .01f), (int) (hit.point.y - hit.normal.y * .01f), (int) (hit.point.z - hit.normal.z * .01f)).GetComponent<MultiblockPartComponent>();
             if (mpc != null) Game.Money += mpc.parentBlock.Price;
-            else Game.Money += Blocks[selectedBlock].Price;
+            else Game.Money += Block.Blocks[selectedBlock].Price;
             world.RemoveBlock((int) (hit.point.x - hit.normal.x * .01f), (int) (hit.point.y - hit.normal.y * .01f), (int) (hit.point.z - hit.normal.z * .01f));
         }
     }
