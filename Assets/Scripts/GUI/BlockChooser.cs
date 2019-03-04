@@ -11,6 +11,7 @@ public class BlockChooser : MonoBehaviour
     const int sizeHalf = sizeBetween / 2;
 
     int SelectedBlock = 0;
+    int MoveY = 0;
     RawImage[] images;
     new RectTransform transform;
     Coroutine animationCoroutine;
@@ -34,83 +35,67 @@ public class BlockChooser : MonoBehaviour
             rt.localScale = Vector3.one;
             rt.pivot = new Vector2(0, .5f);
             rt.sizeDelta = new Vector2(size, size);
-            rt.anchoredPosition = new Vector2(0f, -sizeBetween * i);
+            rt.anchoredPosition = new Vector2(0f, sizeBetween * (i - count / 2));
 
             images[i] = image;
-            UpdateImage(images[i], i);
 
-            UpdateTransparency(image);
+            image.color = new Color(1f, 1f, 1f, 1f - Mathf.Abs(rt.anchoredPosition.y) / sizeBetween / count * 2f);
         }
-    }
-    public void Update()
-    {
-        for (int i = 0; i < count; i++)
-        {
-            images[i].rectTransform.anchoredPosition -= new Vector2(0f, 10f);
-        }
-        UpdatePosition();
 
-        for (int i = 0; i < count; i++)
-        {
-            UpdateTransparency(images[i]);
-            UpdateImage(images[i], SelectedBlock + i);
-        }
+        SelectedBlock = 0;
+
+        UpdateImages();
     }
 
     public void ChangeSelected(int selectedBlock)
     {
         if (animationCoroutine != null) StopCoroutine(animationCoroutine);
-        animationCoroutine = StartCoroutine(AnimationCoroutine(selectedBlock));
+
+        SelectedBlock = selectedBlock;
+        animationCoroutine = StartCoroutine(AnimationCoroutine());
     }
-    IEnumerator AnimationCoroutine(int selectedBlock)
+    IEnumerator AnimationCoroutine()
     {
-        const int speed = 10;
+        const float speed = 2000f;
 
-        Vector2 addpos = new Vector2(0f, speed * (SelectedBlock - selectedBlock));
-        int added = Mathf.Abs(sizeBetween * (SelectedBlock - selectedBlock));
+        Vector2 add = new Vector2();
 
-        while (added > 0)
+        while (transform.anchoredPosition.x > -200f)
         {
-            added -= speed;
+            add.Set(-speed * Time.deltaTime, 0f);
+            transform.anchoredPosition += add;
 
-            foreach (RawImage image in images) image.rectTransform.anchoredPosition += addpos;
+            yield return null;
+        }
 
-            UpdatePosition();
+        UpdateImages();
 
-            for (int i = 0; i < count; i++)
-            {
-                UpdateTransparency(images[i]);
-                UpdateImage(images[i], selectedBlock + i);
-            }
+        while (transform.anchoredPosition.x < 100f)
+        {
+            add.Set(speed * Time.deltaTime, 0f);
+            transform.anchoredPosition += add;
 
             yield return null;
         }
     }
-    void UpdatePosition()
-    {
-        while (images[0].rectTransform.anchoredPosition.y > sizeHalf * count)
-        {
-            foreach (RawImage image in images)
-                image.rectTransform.anchoredPosition -= new Vector2(0f, sizeBetween);
 
-            SelectedBlock++;
-            if (SelectedBlock > Block.Blocks.Count) SelectedBlock = Block.Blocks.Count - 1;
-        }
-        while (images[count - 1].rectTransform.anchoredPosition.y < -sizeHalf * count)
-        {
-            foreach (RawImage image in images)
-                image.rectTransform.anchoredPosition += new Vector2(0f, sizeBetween);
-
-            SelectedBlock--;
-            if (SelectedBlock < 0) SelectedBlock = Block.Blocks.Count - 1;
-        }
-    }
-    void UpdateTransparency(RawImage image)
+    void UpdateImages()
     {
-        image.color = new Color(1f, 1f, 1f, 1f - Mathf.Abs(image.rectTransform.anchoredPosition.y) / 300f / count * 2f);
+        int block;
+        for (int i = 0; i < count; i++)
+        {
+            block = SelectedBlock + i - count / 2;
+
+            while (block < 0) block += Block.Blocks.Count;
+            while (block > Block.Blocks.Count - 1) block -= Block.Blocks.Count;
+
+            images[i].texture = Game.BlockRenders[Block.Blocks[block].Name];
+        }
     }
     void UpdateImage(RawImage image, int block)
     {
+        block -= count / 2;
+
         while (block < 0) block += Block.Blocks.Count;
         while (block > Block.Blocks.Count - 1) block -= Block.Blocks.Count;
 

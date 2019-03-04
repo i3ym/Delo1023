@@ -175,10 +175,7 @@ public class Game : MonoBehaviour
 
         Destroy(camgo);
         Destroy(meshgo);
-
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#endif
+        Destroy(rt);
     }
 
     static int ExpForLvl(int lvl) => (int) (Math.Sqrt(lvl) * lvl * 1000.0);

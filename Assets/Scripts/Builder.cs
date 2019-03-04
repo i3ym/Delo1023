@@ -76,14 +76,14 @@ public class Builder : MonoBehaviour
     {
         tempScroll = Input.GetAxisRaw(MouseScroll);
 
-        if (tempScroll > 0 || Input.GetKeyDown(KeyCode.Alpha2))
+        if (tempScroll > 0 || Input.GetKeyDown(KeyCode.Alpha1))
         {
             if (++selectedBlock >= Block.Blocks.Count) selectedBlock = 0;
             blockChooser.ChangeSelected(selectedBlock);
 
             TextSelectedBlock.text = "Selected: " + selectedBlock;
         }
-        else if (tempScroll < 0 || Input.GetKeyDown(KeyCode.Alpha1))
+        else if (tempScroll < 0 || Input.GetKeyDown(KeyCode.Alpha2))
         {
             if (--selectedBlock < 0) selectedBlock = Block.Blocks.Count - 1;
             blockChooser.ChangeSelected(selectedBlock);
