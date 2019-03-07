@@ -20,7 +20,6 @@ public class Chunk
     List<Mesh> meshes = new List<Mesh>();
     List<GameObject> meshHolders = new List<GameObject>();
     readonly Vector3 zero = Vector3.zero;
-    Thread meshUpdateThread;
 
     public static Quaternion angle1, angle2, angle3;
     public static readonly Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > CubeMeshes = new Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > ();
@@ -106,14 +105,7 @@ public class Chunk
 
             if (update)
             {
-                if (updateFast)
-                {
-                    if (meshUpdateThread != null && meshUpdateThread.IsAlive) meshUpdateThread.Interrupt();
-
-                    MeshCreator.UpdateMeshFast(this, x, y, z, meshes[meshes.Count - 1], meshes.Count - 1, b);
-                    meshUpdateThread = new Thread(() => MeshCreator.UpdateMesh(this, Blocks, sizeY, false));
-                    meshUpdateThread.Start();
-                }
+                if (updateFast) MeshCreator.UpdateMeshFast(this, x, y, z, meshes[meshes.Count - 1], meshes.Count - 1, b);
                 else MeshCreator.UpdateMesh(this, Blocks, sizeY);
             }
             return true;

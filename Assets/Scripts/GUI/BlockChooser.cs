@@ -27,7 +27,7 @@ public class BlockChooser : MonoBehaviour
         RawImage image;
         for (int i = 0; i < count; i++)
         {
-            go = new GameObject("BlockChooser", typeof(RectTransform), typeof(RawImage));
+            go = new GameObject("BlockChooser" + i, typeof(RectTransform), typeof(RawImage));
             image = go.GetComponent<RawImage>();
 
             rt = image.rectTransform;

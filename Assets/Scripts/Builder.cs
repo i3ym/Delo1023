@@ -104,7 +104,7 @@ public class Builder : MonoBehaviour
                 {
                     if (Game.Money - Block.Blocks[selectedBlock].Price >= 0)
                     {
-                        if (world.SetBlock(x, y, z, Block.Blocks[selectedBlock].Instance()))
+                        if (world.SetBlock(x, y, z, Block.Blocks[selectedBlock].Instance(), true))
                             Game.Money -= Block.Blocks[selectedBlock].Price;
                     }
                     break;

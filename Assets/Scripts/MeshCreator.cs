@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public
 static class MeshCreator
 {
+    static Coroutine updateMeshAfterWait;
     static List<int> tris = new List<int>();
     static List<Vector3> verts = new List<Vector3>();
     static List<Vector2> uv = new List<Vector2>();
@@ -19,6 +19,8 @@ static class MeshCreator
 
     public static void UpdateMeshFast(Chunk c, int x, int y, int z, Mesh mesh, int meshIndex, Block block) //TODO optimize
     {
+        if (updateMeshAfterWait != null) Game.game.StopCoroutine(updateMeshAfterWait);
+
         vertss[x] = new List<Vector3>(mesh.vertices);
         triss[x] = new List<int>(mesh.triangles);
         uvss[x] = new List<Vector2>(mesh.uv);
@@ -42,6 +44,13 @@ static class MeshCreator
         uv = uvss[x];
 
         DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), null, meshInd, true), meshIndex);
+
+        updateMeshAfterWait = Game.game.StartCoroutine(UpdateMeshAfterWait(c));
+    }
+    static IEnumerator UpdateMeshAfterWait(Chunk c)
+    {
+        yield return new WaitForSeconds(5f);
+        new Thread(() => UpdateMesh(c, c.Blocks, c.sizeY, false)).Start();
     }
     public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, int sizeY, bool isMainThread = true)
     {

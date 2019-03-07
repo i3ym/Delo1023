@@ -23,7 +23,7 @@ public class Game : MonoBehaviour
     public static World world;
     public static GameObject buildingChooser;
     public static List<Building> Buildings = new List<Building>();
-    static Game game = null;
+    public static Game game = null;
 
     public static int Money { get => _money; set { _money = value; game.textMoney.text = "money: " + value.ToString(); } }
     public static int Villagers { get => _villagers; set { _villagers = value; game.textVillagers.text = value + " / " + VillagersMax; } }
@@ -73,7 +73,7 @@ public class Game : MonoBehaviour
         BlockInfo.cubeMeshMultitexture = cubeMeshMultitexture;
 
         CreateAtlas();
-        
+
         foreach (Texture2D tex in Resources.LoadAll<Texture2D>("Textures")) textures.Add(tex.name, tex);
         foreach (Texture2D tex in Resources.LoadAll<Texture2D>("TexturesMesh")) textures.Add(tex.name, tex);
 
