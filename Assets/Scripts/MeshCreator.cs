@@ -50,9 +50,9 @@ static class MeshCreator
     static IEnumerator UpdateMeshAfterWait(Chunk c)
     {
         yield return new WaitForSeconds(5f);
-        new Thread(() => UpdateMesh(c, c.Blocks, c.sizeY, false)).Start();
+        new Thread(() => UpdateMesh(c, c.Blocks, false)).Start();
     }
-    public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, int sizeY, bool isMainThread = true)
+    public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, bool isMainThread = true)
     {
         vertss = new List<Vector3>[Chunk.maxX];
         triss = new List<int>[Chunk.maxX];
@@ -67,7 +67,7 @@ static class MeshCreator
             triss[x] = new List<int>();
             uvss[x] = new List<Vector2>();
 
-            for (int y = 0; y < sizeY; y++)
+            for (int y = 0; y < Blocks.Count; y++)
             {
                 for (int z = 0; z < Chunk.maxZ; z++)
                 {
@@ -93,7 +93,7 @@ static class MeshCreator
             triss[x] = new List<int>();
             uvss[x] = new List<Vector2>();
 
-            for (int y = 0; y < sizeY; y++)
+            for (int y = 0; y < Blocks.Count; y++)
                 for (int z = 0; z < Chunk.maxZ; z++)
                     if (Blocks[y][x, z] != null)
                         AddCube(x, y, z, false, null, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null);

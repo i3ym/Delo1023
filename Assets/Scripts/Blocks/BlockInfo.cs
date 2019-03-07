@@ -143,8 +143,6 @@ public class BlockInfo
 
         return b;
     }
-
-    public static implicit operator Block(BlockInfo bi) => bi.Instance();
 }
 
 public class BlockInfoMesh : BlockInfo

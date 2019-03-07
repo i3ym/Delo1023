@@ -19,7 +19,6 @@ public class Chunk
     public GameObject parent;
     List<Mesh> meshes = new List<Mesh>();
     List<GameObject> meshHolders = new List<GameObject>();
-    readonly Vector3 zero = Vector3.zero;
 
     public static Quaternion angle1, angle2, angle3;
     public static readonly Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > CubeMeshes = new Dictionary < Sides, (sbyte[] X, sbyte[] Y, sbyte[] Z) > ();
@@ -49,7 +48,7 @@ public class Chunk
         parent.transform.position = new Vector3(x * maxX, 0, z * maxX);
 
         Generate();
-        MeshCreator.UpdateMesh(this, Blocks, sizeY);
+        MeshCreator.UpdateMesh(this, Blocks);
     }
 
     void Generate()
@@ -57,10 +56,10 @@ public class Chunk
         for (int xx = 0; xx < maxX; xx++)
             for (int yy = 0; yy < 9; yy++)
                 for (int zz = 0; zz < maxZ; zz++)
-                    SetBlock(xx, yy, zz, Block.Dirt.Instance(), false);
+                    SetBlock(xx, yy, zz, Block.Dirt.Instance(), update : false, rotation : 0);
         for (int xx = 0; xx < maxX; xx++)
             for (int zz = 0; zz < maxZ; zz++)
-                SetBlock(xx, 9, zz, Block.Grass.Instance(), false);
+                SetBlock(xx, 9, zz, Block.Grass.Instance(), update : false, rotation : 0);
     }
     public int CalculatePrice()
     {
@@ -74,7 +73,7 @@ public class Chunk
 
         return price;
     }
-    public bool SetBlock(int x, int y, int z, Block b, bool update = true, bool updateFast = false)
+    public bool SetBlock(int x, int y, int z, Block b, bool update = true, bool updateFast = false, byte rotation = byte.MaxValue)
     {
         while (y >= sizeY)
         {
@@ -86,8 +85,12 @@ public class Chunk
 
         if (b.Info != Block.Transparent && b.Info.mesh != null)
         {
-            b.Rotation = (byte) ((Game.camera.transform.eulerAngles.y + 45f) / 90);
-            if (b.Rotation == 4) b.Rotation = 0;
+            if (rotation != byte.MaxValue) b.Rotation = rotation;
+            else
+            {
+                b.Rotation = (byte) ((Game.camera.transform.eulerAngles.y + 45f) / 90);
+                if (b.Rotation == 4) b.Rotation = 0;
+            }
 
             MultiblockComponent mc = b.GetComponent<MultiblockComponent>();
             if (mc != null)
@@ -106,7 +109,7 @@ public class Chunk
             if (update)
             {
                 if (updateFast) MeshCreator.UpdateMeshFast(this, x, y, z, meshes[meshes.Count - 1], meshes.Count - 1, b);
-                else MeshCreator.UpdateMesh(this, Blocks, sizeY);
+                else MeshCreator.UpdateMesh(this, Blocks);
             }
             return true;
         }
@@ -130,7 +133,7 @@ public class Chunk
 
         if (shootEvent && Blocks[y][x, z].OnBreak(x + X * maxX, y, z + Z * maxZ)) Blocks[y][x, z] = null;
         else Blocks[y][x, z] = null;
-        MeshCreator.UpdateMesh(this, Blocks, sizeY);
+        MeshCreator.UpdateMesh(this, Blocks);
     }
     public Block GetBlock(int x, int y, int z)
     {
@@ -164,7 +167,7 @@ public class Chunk
             }
 
             go.transform.SetParent(parent.transform);
-            go.transform.localPosition = zero;
+            go.transform.position = parent.transform.position;
             go.layer = 10;
 
             meshes.Add(mesh);
@@ -188,7 +191,7 @@ public class Chunk
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
         }
-        mesh.Optimize(); //TODO what is this
+        mesh.Optimize();
 
         if (isCollider)
         {

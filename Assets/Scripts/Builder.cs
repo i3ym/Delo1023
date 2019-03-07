@@ -11,15 +11,15 @@ public class Builder : MonoBehaviour
     public const string MouseScroll = "Mouse ScrollWheel";
 
     [SerializeField]
-    TextMeshProUGUI TextSelectedBlock;
+    TextMeshProUGUI TextSelectedBlock = null;
     [SerializeField]
-    GameObject QuitMenu;
+    GameObject QuitMenu = null;
     [SerializeField]
-    Button ButtonContinue, ButtonExit;
+    Button ButtonContinue = null, ButtonExit = null;
     [SerializeField]
-    World world;
+    World world = null;
     [SerializeField]
-    BlockChooser blockChooser;
+    BlockChooser blockChooser = null;
 
     [HideInInspector]
     public Vector3 OldCameraPosition;

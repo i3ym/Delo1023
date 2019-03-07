@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 
 public class Game : MonoBehaviour
@@ -25,7 +24,7 @@ public class Game : MonoBehaviour
     public static List<Building> Buildings = new List<Building>();
     public static Game game = null;
 
-    public static int Money { get => _money; set { _money = value; game.textMoney.text = "money: " + value.ToString(); } }
+    public static int Money { get => _money; set { _money = value; game.textMoney.text = value.ToString(); } }
     public static int Villagers { get => _villagers; set { _villagers = value; game.textVillagers.text = value + " / " + VillagersMax; } }
     public static int VillagersMax { get => _villagersMax; set { _villagersMax = value; Villagers = Math.Min(VillagersMax, Villagers); } }
     public static int Exp
@@ -46,19 +45,19 @@ public class Game : MonoBehaviour
         {
             _level = value;
             game.sliderExp.maxValue = (float) (ExpForLvl(value + 1) - ExpForLvl(value));
-            game.textLevel.text = "level: " + value.ToString();
+            game.textLevel.text = value.ToString();
         }
     }
     static int _money = 0, _villagers = 0, _level = 0, _exp = 0, _villagersMax;
 
     [SerializeField]
-    Material mat;
+    Material mat = null;
     [SerializeField]
-    TextMeshProUGUI textMoney, textVillagers, textLevel, textExp;
+    TextMeshProUGUI textMoney = null, textVillagers = null, textLevel = null, textExp = null;
     [SerializeField]
-    Slider sliderExp;
+    Slider sliderExp = null;
     [SerializeField]
-    Mesh cubeMesh, cubeMeshMultitexture;
+    Mesh cubeMesh = null, cubeMeshMultitexture = null;
 
     void Awake()
     {

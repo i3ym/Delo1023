@@ -11,7 +11,6 @@ public class BlockChooser : MonoBehaviour
     const int sizeHalf = sizeBetween / 2;
 
     int SelectedBlock = 0;
-    int MoveY = 0;
     RawImage[] images;
     new RectTransform transform;
     Coroutine animationCoroutine;

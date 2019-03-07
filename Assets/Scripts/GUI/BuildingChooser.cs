@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class BuildingChooser : MonoBehaviour
 {
     [SerializeField]
-    Button house;
+    Button house = null;
 
     void Awake()
     {
