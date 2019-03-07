@@ -25,7 +25,8 @@ static class MeshCreator
         triss[x] = new List<int>(mesh.triangles);
         uvss[x] = new List<Vector2>(mesh.uv);
 
-        AddCube(x, y, z, block.Info.IsTransparent, block.Info.uvs, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null || c.GetBlock(_x, _y, _z).Info.IsTransparent);
+        if (block.Info is BlockInfoMesh) AddMesh(x, y, z, block, c, new Vector3(x + .5f, y, z + .5f));
+        else AddCube(x, y, z, block.Info.IsTransparent, block.Info.uvs, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null || c.GetBlock(_x, _y, _z).Info.IsTransparent);
 
         verts = vertss[x];
         tris = triss[x];
