@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a822813034164baab95e7b823e2294ef
+guid: 75d37b7296056f667a39266da68e97c5
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -10,7 +10,7 @@ ScriptedImporter:
   script: {fileID: 11500000, guid: a57477913897c46af95d590f580878bd, type: 3}
   svgType: 0
   texturedSpriteMeshType: 0
-  svgPixelsPerUnit: 10
+  svgPixelsPerUnit: 4
   gradientResolution: 128
   alignment: 0
   customPivot: {x: 0, y: 0}
@@ -20,33 +20,33 @@ ScriptedImporter:
   predefinedResolutionIndex: 3
   targetResolution: 480
   resolutionMultiplier: 1
-  stepDistance: 50
+  stepDistance: 5000
   samplingStepDistance: 3
   maxCordDeviationEnabled: 1
   maxCordDeviation: 1
   maxTangentAngleEnabled: 0
   maxTangentAngle: 5
   keepTextureAspectRatio: 1
-  textureSize: 128
+  textureSize: 256
   textureWidth: 256
   textureHeight: 256
-  wrapMode: 1
-  filterMode: 2
-  sampleCount: 8
+  wrapMode: 0
+  filterMode: 1
+  sampleCount: 4
   spriteData:
     TessellationDetail: 0
     SpriteRect:
-      name: GUI_moneySprite
+      name: 
       originalName: 
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       alignment: 0
       border: {x: 0, y: 0, z: 0, w: 0}
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 100
-        height: 100
-      spriteID: 3e0894fc98c39dc0c934948bf7cea5c5
+        width: 0
+        height: 0
+      spriteID: 73b3ab2c11e4b161e9c1224d8048b874
       internalID: 0
     PhysicsOutlines: []

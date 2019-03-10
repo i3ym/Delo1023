@@ -33,9 +33,10 @@ public class Game : MonoBehaviour
         set
         {
             _exp = value;
-            Level = LvlForExp(value);
-            game.sliderExp.value = value - ExpForLvl(Level);
-            game.textExp.text = "exp: " + (value - ExpForLvl(Level));
+            int newlevel = LvlForExp(value);
+            if (Level != newlevel) Level = newlevel;
+
+            game.rainbowExperience.anchoredPosition = new Vector2(0f, 1f / ((ExpForLvl(Level + 1) - ExpForLvl(Level)) / (float) (value - ExpForLvl(Level))) * 116f);
         }
     }
     public static int Level
@@ -44,7 +45,6 @@ public class Game : MonoBehaviour
         private set
         {
             _level = value;
-            game.sliderExp.maxValue = (float) (ExpForLvl(value + 1) - ExpForLvl(value));
             game.textLevel.text = value.ToString();
         }
     }
@@ -53,9 +53,9 @@ public class Game : MonoBehaviour
     [SerializeField]
     Material mat = null;
     [SerializeField]
-    TextMeshProUGUI textMoney = null, textVillagers = null, textLevel = null, textExp = null;
+    TextMeshProUGUI textMoney = null, textVillagers = null, textLevel = null;
     [SerializeField]
-    Slider sliderExp = null;
+    RectTransform rainbowExperience = null;
     [SerializeField]
     Mesh cubeMesh = null, cubeMeshMultitexture = null;
 
@@ -83,6 +83,10 @@ public class Game : MonoBehaviour
 
         Money = 100000;
         Villagers = 0;
+    }
+    void Update()
+    {
+        if (Input.GetKey(KeyCode.T)) Exp++;
     }
 
     void CreateAtlas()
