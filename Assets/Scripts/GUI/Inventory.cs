@@ -13,7 +13,7 @@ public class Inventory : MonoBehaviour
     SVGImage[] tabImages;
 
     [SerializeField]
-    Sprite tabOpen, tabClosed;
+    Sprite tabOpen = null, tabClosed = null;
 
     void Start()
     {

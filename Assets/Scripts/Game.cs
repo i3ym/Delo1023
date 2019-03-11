@@ -10,7 +10,6 @@ using UnityEngine.UI;
 public class Game : MonoBehaviour
 {
     public static new Camera camera;
-    public static Dictionary<string, ModelHolder> models = new Dictionary<string, ModelHolder>();
     public static Dictionary<string, Rect> TextureRects = new Dictionary<string, Rect>();
     public static Dictionary<string, Vector2[]> TextureMeshUvs = new Dictionary<string, Vector2[]>();
     public static Dictionary<string, Mesh> Meshes = new Dictionary<string, Mesh>();
@@ -84,16 +83,12 @@ public class Game : MonoBehaviour
         Money = 100000;
         Villagers = 0;
     }
-    void Update()
-    {
-        if (Input.GetKey(KeyCode.T)) Exp++;
-    }
 
     void CreateAtlas()
     {
         Atlas = new Texture2D(1, 1, TextureFormat.RGBA32, false);
         Atlas.filterMode = FilterMode.Point;
-        Atlas.wrapMode = TextureWrapMode.Repeat;
+        Atlas.wrapMode = TextureWrapMode.Clamp;
 
         Texture2D[] texturesBlocks = Resources.LoadAll<Texture2D>("Textures");
         Texture2D[] texturesMeshes = Resources.LoadAll<Texture2D>("TexturesMesh");

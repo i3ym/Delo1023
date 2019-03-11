@@ -71,7 +71,70 @@ public class Builder : MonoBehaviour
         if (Input.GetMouseButtonDown(0)) PlaceBlock();
         if (Input.GetMouseButtonDown(1)) RemoveBlock();
     }
+    void OnPostRender() => SetOutline();
 
+    void SetOutline()
+    {
+        if (Physics.Raycast(camera.position, camera.forward, out hit, 500f, layerMask))
+        {
+            const float size = 1.05f;
+            const float minadd = (size - 1f) / 2f;
+            Color clr = new Color(.1f, .1f, .1f);
+            Vector3 blockPos = new Vector3((int) (hit.point.x - hit.normal.x * .01f) - minadd, (int) (hit.point.y - hit.normal.y * .01f) - minadd, (int) (hit.point.z - hit.normal.z * .01f) - minadd);
+            Vector3 temp;
+
+            GL.PushMatrix();
+            GL.Begin(GL.LINES);
+            GL.Color(clr);
+
+            temp = new Vector3();
+            GL.Vertex(blockPos + temp);
+            temp.y = size;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.x = size;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.y = 0f;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.x = 0f;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.z = size;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.y = size;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.z = 0f;
+            GL.Vertex(blockPos + temp);
+
+            temp.Set(size, 0f, 0f);
+            GL.Vertex(blockPos + temp);
+            temp.z = size;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.y = size;
+            GL.Vertex(blockPos + temp);
+            GL.Vertex(blockPos + temp);
+            temp.z = 0f;
+            GL.Vertex(blockPos + temp);
+
+            temp.Set(0f, 0f, size);
+            GL.Vertex(blockPos + temp);
+            temp.x = size;
+            GL.Vertex(blockPos + temp);
+
+            temp.Set(0f, size, size);
+            GL.Vertex(blockPos + temp);
+            temp.x = size;
+            GL.Vertex(blockPos + temp);
+
+            GL.End();
+            GL.PopMatrix();
+        }
+    }
     void ChooseBlock()
     {
         tempScroll = Input.GetAxisRaw(MouseScroll);

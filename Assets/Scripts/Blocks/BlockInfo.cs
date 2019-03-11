@@ -126,9 +126,15 @@ public class BlockInfo
     }
     static Vector2[] To2(string tex)
     {
+        const float add = .0001f;
+
         tempUv = Game.TextureRects[tex];
 
-        return new Vector2[] { new Vector2(tempUv.xMin, tempUv.yMin), new Vector2(tempUv.xMin, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMax), new Vector2(tempUv.xMax, tempUv.yMin) };
+        return new Vector2[]
+        {
+            new Vector2(tempUv.xMin + add, tempUv.yMin + add), new Vector2(tempUv.xMin + add, tempUv.yMax - add),
+                new Vector2(tempUv.xMax - add, tempUv.yMax - add), new Vector2(tempUv.xMax - add, tempUv.yMin + add)
+        };
     }
 
     public Block Instance()
