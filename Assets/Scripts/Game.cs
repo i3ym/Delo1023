@@ -57,6 +57,8 @@ public class Game : MonoBehaviour
     RectTransform rainbowExperience = null;
     [SerializeField]
     Mesh cubeMesh = null, cubeMeshMultitexture = null;
+    [SerializeField]
+    Camera renderBlocksCamera = null;
 
     void Awake()
     {
@@ -81,7 +83,8 @@ public class Game : MonoBehaviour
         Block.CreateBlocks();
 
         Money = 100000;
-        Villagers = 0;
+        VillagersMax = 0;
+        Exp = 0;
     }
 
     void CreateAtlas()
@@ -122,13 +125,13 @@ public class Game : MonoBehaviour
     {
         const int size = 256;
 
-        GameObject camgo = GameObject.Find("RenderBlocksCamera");
-        Camera camera = camgo.GetComponent<Camera>();
+        renderBlocksCamera.gameObject.SetActive(true);
+
         RenderTexture rt = RenderTexture.GetTemporary(size, size);
         RenderTexture.active = rt;
-        camera.clearFlags = CameraClearFlags.SolidColor;
-        camera.backgroundColor = new Color(0, 0, 0, 0);
-        camera.targetTexture = rt;
+        renderBlocksCamera.clearFlags = CameraClearFlags.SolidColor;
+        renderBlocksCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+        renderBlocksCamera.targetTexture = rt;
 
         GameObject meshgo = new GameObject();
         meshgo.transform.eulerAngles = new Vector3(0f, 45f, 0f);
@@ -142,8 +145,8 @@ public class Game : MonoBehaviour
         {
             Texture2D texture = new Texture2D(size, size);
 
-            meshgo.transform.position = camgo.transform.position + new Vector3(0f, -1f, 1.5f);
-            camera.transform.LookAt(meshgo.transform);
+            meshgo.transform.position = renderBlocksCamera.gameObject.transform.position + new Vector3(0f, -1f, 1.5f);
+            renderBlocksCamera.transform.LookAt(meshgo.transform);
 
             if (Meshes.ContainsKey(b.Name))
             {
@@ -159,7 +162,7 @@ public class Game : MonoBehaviour
 
             mr.material.mainTexture = textures[b.Name];
 
-            camera.Render();
+            renderBlocksCamera.Render();
             texture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
             texture.Apply();
 
@@ -171,7 +174,7 @@ public class Game : MonoBehaviour
 #endif
         }
 
-        Destroy(camgo);
+        Destroy(renderBlocksCamera.gameObject);
         Destroy(meshgo);
         Destroy(rt);
     }
