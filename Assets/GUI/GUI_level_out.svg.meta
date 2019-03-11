@@ -10,19 +10,19 @@ ScriptedImporter:
   script: {fileID: 11500000, guid: a57477913897c46af95d590f580878bd, type: 3}
   svgType: 0
   texturedSpriteMeshType: 0
-  svgPixelsPerUnit: 4
+  svgPixelsPerUnit: 100
   gradientResolution: 128
   alignment: 0
   customPivot: {x: 0, y: 0}
   generatePhysicsShape: 0
   preserveViewport: 0
-  advancedMode: 1
-  predefinedResolutionIndex: 3
-  targetResolution: 480
+  advancedMode: 0
+  predefinedResolutionIndex: 1
+  targetResolution: 1080
   resolutionMultiplier: 1
-  stepDistance: 5000
-  samplingStepDistance: 3
-  maxCordDeviationEnabled: 1
+  stepDistance: 10
+  samplingStepDistance: 100
+  maxCordDeviationEnabled: 0
   maxCordDeviation: 1
   maxTangentAngleEnabled: 0
   maxTangentAngle: 5
@@ -47,6 +47,6 @@ ScriptedImporter:
         y: 0
         width: 0
         height: 0
-      spriteID: 73b3ab2c11e4b161e9c1224d8048b874
+      spriteID: 312fa533a1670df35a8c65fb7dbb1697
       internalID: 0
     PhysicsOutlines: []

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -55,10 +56,6 @@ public class Game : MonoBehaviour
     TextMeshProUGUI textMoney = null, textVillagers = null, textLevel = null;
     [SerializeField]
     RectTransform rainbowExperience = null;
-    [SerializeField]
-    Mesh cubeMesh = null, cubeMeshMultitexture = null;
-    [SerializeField]
-    Camera renderBlocksCamera = null;
 
     void Awake()
     {
@@ -69,8 +66,9 @@ public class Game : MonoBehaviour
         }
         game = this;
         camera = Camera.main;
-        BlockInfo.cubeMesh = cubeMesh;
-        BlockInfo.cubeMeshMultitexture = cubeMeshMultitexture;
+        Money = 100000;
+        VillagersMax = 0;
+        Exp = 0;
 
         CreateAtlas();
 
@@ -82,9 +80,25 @@ public class Game : MonoBehaviour
 
         Block.CreateBlocks();
 
-        Money = 100000;
-        VillagersMax = 0;
-        Exp = 0;
+        GameObject obj;
+        Sprite spr;
+        Material mat;
+        int w, h;
+        Texture2D texx;
+        foreach (SVGImage img in GameObject.FindObjectsOfType<SVGImage>())
+        {
+            obj = img.gameObject;
+            spr = img.sprite;
+            mat = img.material;
+            w = (int) img.rectTransform.sizeDelta.x;
+            h = (int) img.rectTransform.sizeDelta.y;
+            DestroyImmediate(img);
+
+            texx = VectorUtils.RenderSpriteToTexture2D(spr, w, h, mat, 8, true);
+            texx.wrapMode = TextureWrapMode.Clamp;
+
+            obj.AddComponent<RawImage>().texture = texx;
+        }
     }
 
     void CreateAtlas()
@@ -120,63 +134,6 @@ public class Game : MonoBehaviour
 
         material = mat;
         material.mainTexture = Atlas;
-    }
-    void CreateBlockRenders()
-    {
-        const int size = 256;
-
-        renderBlocksCamera.gameObject.SetActive(true);
-
-        RenderTexture rt = RenderTexture.GetTemporary(size, size);
-        RenderTexture.active = rt;
-        renderBlocksCamera.clearFlags = CameraClearFlags.SolidColor;
-        renderBlocksCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
-        renderBlocksCamera.targetTexture = rt;
-
-        GameObject meshgo = new GameObject();
-        meshgo.transform.eulerAngles = new Vector3(0f, 45f, 0f);
-        meshgo.layer = 15;
-
-        MeshFilter mf = meshgo.AddComponent<MeshFilter>();
-        MeshRenderer mr = meshgo.AddComponent<MeshRenderer>();
-        mr.material = new Material(mat);
-
-        foreach (BlockInfo b in Block.Blocks)
-        {
-            Texture2D texture = new Texture2D(size, size);
-
-            meshgo.transform.position = renderBlocksCamera.gameObject.transform.position + new Vector3(0f, -1f, 1.5f);
-            renderBlocksCamera.transform.LookAt(meshgo.transform);
-
-            if (Meshes.ContainsKey(b.Name))
-            {
-                mf.mesh = Meshes[b.Name];
-
-                Vector3 sizef = mf.mesh.bounds.max - mf.mesh.bounds.min;
-                Vector3Int meshsize = new Vector3Int(Mathf.CeilToInt(sizef.x), Mathf.CeilToInt(sizef.y), Mathf.CeilToInt(sizef.z));
-                int meshmax = Math.Max(meshsize.x, meshsize.z);
-
-                meshgo.transform.position += new Vector3(-(meshsize.z - 1) * .25f - (meshsize.x - 1) * .5f, -(meshsize.y - 1) - .5f, meshmax / 4f + meshsize.y / 1.5f - 1f);
-            }
-            else mf.mesh = cubeMesh;
-
-            mr.material.mainTexture = textures[b.Name];
-
-            renderBlocksCamera.Render();
-            texture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-            texture.Apply();
-
-            BlockRenders.Add(b.Name, texture);
-
-#if UNITY_EDITOR
-            byte[] bytes = texture.EncodeToPNG();
-            File.WriteAllBytes("Render/" + b.Name + ".png", bytes);
-#endif
-        }
-
-        Destroy(renderBlocksCamera.gameObject);
-        Destroy(meshgo);
-        Destroy(rt);
     }
 
     static int ExpForLvl(int lvl) => (int) (Math.Sqrt(lvl) * lvl * 1000.0);

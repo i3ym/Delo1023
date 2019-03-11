@@ -25,8 +25,6 @@ public class Block
 
     public static void CreateBlocks()
     {
-        BlockInfo.CreateGameObjectsToRender();
-
         Transparent = new BlockInfoMesh("transparent", 0);
         Blocks.Remove(Transparent);
 
@@ -52,9 +50,6 @@ public class Block
                 new object[] { new LightHolder(new Vector3(0f, 3.94141f, -.245556f), new Vector3(70f, 180f, 0f), LightType.Spot, 10f, 80, Color.white, 2f) }
             }
         });
-
-        GameObject.Destroy(BlockInfo.camgo);
-        GameObject.Destroy(BlockInfo.meshgo);
     }
 
     public T GetComponent<T>() where T : BComponent => components.ContainsKey(typeof(T)) ? (T) components[typeof(T)] : null;

@@ -871,6 +871,7 @@ GameObject:
   - component: {fileID: 427547776}
   - component: {fileID: 427547775}
   - component: {fileID: 427547774}
+  - component: {fileID: 427547777}
   m_Layer: 0
   m_Name: RenderBlocksCamera
   m_TagString: Untagged
@@ -996,6 +997,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &427547777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427547773}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_GeneratorAsset: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 63f608afe356b3d6a967b01afcd6c075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cubeMesh: {fileID: -2432090755550338912, guid: 142bb1295229e31199d2c558ca642adc,
+    type: 3}
+  cubeMeshMultitexture: {fileID: -2432090755550338912, guid: fe64c82c9548e54d3bddbb2f64c71ba1,
+    type: 3}
 --- !u!1 &440080143
 GameObject:
   m_ObjectHideFlags: 0
@@ -1423,11 +1441,8 @@ MonoBehaviour:
   textVillagers: {fileID: 221364283}
   textLevel: {fileID: 465417109}
   rainbowExperience: {fileID: 585074411}
-  cubeMesh: {fileID: -2432090755550338912, guid: 142bb1295229e31199d2c558ca642adc,
-    type: 3}
-  cubeMeshMultitexture: {fileID: -2432090755550338912, guid: fe64c82c9548e54d3bddbb2f64c71ba1,
-    type: 3}
-  renderBlocksCamera: {fileID: 427547775}
+  sprite: {fileID: 3286163911610860551, guid: ea5e1784c0d6d0fa09c54c4c66b409f0, type: 3}
+  mat2: {fileID: 2100000, guid: 578007a5be5905f23b0a419e06e8a0d3, type: 2}
 --- !u!114 &534669908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2856,7 +2871,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!224 &1385490007
 RectTransform:
@@ -3488,7 +3503,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!224 &1785938147
 RectTransform:
