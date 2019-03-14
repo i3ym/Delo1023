@@ -4,38 +4,26 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class Circle : MonoBehaviour
+public abstract class Circle : MonoBehaviour
 {
-    const float selectedMultiplpier = 1.3f;
-    const float multiplier = 1.7f;
-    List<CircleItem> items = new List<CircleItem>();
-    int count = 6;
-    float size = 300f;
-    new MeshRenderer renderer;
-    Mesh mesh;
+    protected const float selectedMultiplier = 1.1f;
+    protected const int count = 9;
+    protected List<CircleItem> items = new List<CircleItem>();
+    protected float size = 300f;
+    protected new MeshRenderer renderer;
+    protected Mesh mesh;
 
     [SerializeField]
-    Sprite[] sprites = null;
+    protected Sprite[] sprites = null;
     [SerializeField]
-    Material materialSvg = null;
+    protected Material materialSvg = null;
+    [SerializeField]
+    protected float thickness, distance;
+    [SerializeField]
+    protected float inBound, outBound;
 
     void Start()
     {
-        items.Add(new CircleItem(sprites[0], () =>
-        {
-            Debug.Log("copy");
-        }));
-        items.Add(new CircleItem(sprites[1], () =>
-        {
-            Debug.Log("paste");
-        }));
-        items.Add(new CircleItem(sprites[2], () =>
-        {
-            Debug.Log("regen");
-        }));
-
-        count = items.Count;
-
         GameObject go;
         SVGImage svg;
         float angle;
@@ -47,11 +35,11 @@ public class Circle : MonoBehaviour
             svg.material = materialSvg;
             svg.rectTransform.SetParent(transform);
             svg.rectTransform.localScale = Vector3.one;
-            svg.rectTransform.sizeDelta = svg.sprite.bounds.extents * 300f;
+            svg.rectTransform.sizeDelta = svg.sprite.bounds.extents * size;
             svg.transform.localPosition = -Vector3.one;
 
-            angle = GetAngle(i);
-            svg.rectTransform.anchoredPosition = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * size * .9f;
+            angle = GetAngle(i) + GetAngle(1) / 2f;
+            svg.rectTransform.anchoredPosition = GetPosition(angle) * selectedMultiplier;
 
             items[i].transform = svg.rectTransform;
             Game.SvgImageToRaw(svg);
@@ -76,26 +64,27 @@ public class Circle : MonoBehaviour
             float angle;
             int selected = mod(Mathf.FloorToInt(Mathf.Atan2(mousePos.y, mousePos.x) / Mathf.PI / 2f * count), count);
 
-            CreateMesh(selected); //TODO not create but change
+            CreateMesh(selected);
 
             for (int i = 0; i < items.Count; i++)
             {
+                if (i < items.Count) continue;
+
                 angle = GetAngle(i) + GetAngle(1) / 2f;
-                if (i == selected) items[i].transform.anchoredPosition = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * size * .9f;
-                else items[i].transform.anchoredPosition = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * size * .9f * selectedMultiplpier / multiplier;
+                if (i == selected) items[i].transform.anchoredPosition = GetPosition(angle) * selectedMultiplier; //TODO
+                else items[i].transform.anchoredPosition = GetPosition(angle) * selectedMultiplier; //TODO
             }
 
-            if (Input.GetMouseButtonDown(0))
-            {
-                items[selected].action();
-            }
+            if (Input.GetMouseButtonDown(0) && selected < items.Count) items[selected].action();
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    int mod(int x, int m) => (x % m + m) % m;
+    Vector2 GetPosition(float angle) => new Vector2(Mathf.Cos(angle) * distance, Mathf.Sin(angle) * distance);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    float GetAngle(int i) => 2f * Mathf.PI / count * i;
+    static int mod(int x, int m) => (x % m + m) % m;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static float GetAngle(int i) => 2f * Mathf.PI / count * i;
     void CreateMesh(int selected = -1)
     {
         List<Vector3> verts = new List<Vector3>();
@@ -106,29 +95,29 @@ public class Circle : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            pos.Set(Mathf.Cos(angle), Mathf.Sin(angle));
-            if (i != selected)
+            pos = GetPosition(angle);
+            if (i == selected && i < items.Count)
             {
-                verts.Add(pos * size);
-                verts.Add(pos * multiplier * size);
+                verts.Add(pos.normalized * distance * selectedMultiplier);
+                verts.Add(pos + pos.normalized * thickness * selectedMultiplier);
             }
             else
             {
-                verts.Add(pos * size * selectedMultiplpier);
-                verts.Add(pos * multiplier * size * selectedMultiplpier);
+                verts.Add(pos);
+                verts.Add(pos + pos.normalized * thickness);
             }
 
             angle = GetAngle(i + 1);
-            pos.Set(Mathf.Cos(angle), Mathf.Sin(angle));
-            if (i != selected)
+            pos = GetPosition(angle);
+            if (i == selected && i < items.Count)
             {
-                verts.Add(pos * multiplier * size);
-                verts.Add(pos * size);
+                verts.Add(pos + pos.normalized * thickness * selectedMultiplier);
+                verts.Add(pos.normalized * distance * selectedMultiplier);
             }
             else
             {
-                verts.Add(pos * multiplier * size * selectedMultiplpier);
-                verts.Add(pos * size * selectedMultiplpier);
+                verts.Add(pos + pos.normalized * thickness);
+                verts.Add(pos);
             }
 
             tris.Add(2 + (i * 4));
