@@ -116,16 +116,6 @@ public class Chunk
 
         return false;
     }
-    public Block[] GetBlocksArray()
-    {
-        List<Block> blocks = new List<Block>();
-
-        foreach (Block[, ] b in Blocks)
-            foreach (Block bb in b)
-                blocks.Add(bb);
-
-        return blocks.ToArray();
-    }
     public void RemoveBlock(int x, int y, int z, bool shootEvent = true)
     {
         if (y < 0 || y >= sizeY) return;

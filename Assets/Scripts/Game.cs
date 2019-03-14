@@ -66,6 +66,7 @@ public class Game : MonoBehaviour
         }
         game = this;
         camera = Camera.main;
+        material = mat;
         Money = 100000;
         VillagersMax = 0;
         Exp = 0;
@@ -79,28 +80,22 @@ public class Game : MonoBehaviour
         TextureMeshUvs.Add("transparent", new Vector2[] { });
 
         Block.CreateBlocks();
-
-        GameObject obj;
-        Sprite spr;
-        Material mat;
-        int w, h;
-        Texture2D texx;
-        foreach (SVGImage img in GameObject.FindObjectsOfType<SVGImage>())
-        {
-            obj = img.gameObject;
-            spr = img.sprite;
-            mat = img.material;
-            w = (int) img.rectTransform.sizeDelta.x;
-            h = (int) img.rectTransform.sizeDelta.y;
-            DestroyImmediate(img);
-
-            texx = VectorUtils.RenderSpriteToTexture2D(spr, w, h, mat, 8, true);
-            texx.wrapMode = TextureWrapMode.Clamp;
-
-            obj.AddComponent<RawImage>().texture = texx;
-        }
     }
 
+    public static void SvgImageToRaw(SVGImage img)
+    {
+        GameObject obj = img.gameObject;
+
+        Texture2D texx = VectorUtils.RenderSpriteToTexture2D(img.sprite, (int) img.rectTransform.sizeDelta.x, (int) img.rectTransform.sizeDelta.y, img.material, 8, true);
+        texx.wrapMode = TextureWrapMode.Clamp;
+
+        DestroyImmediate(img);
+        obj.AddComponent<RawImage>().texture = texx;
+    }
+    public static void SvgImagesToRaw()
+    {
+        foreach (SVGImage img in GameObject.FindObjectsOfType<SVGImage>()) SvgImageToRaw(img);
+    }
     void CreateAtlas()
     {
         Atlas = new Texture2D(1, 1, TextureFormat.RGBA32, false);
@@ -132,7 +127,6 @@ public class Game : MonoBehaviour
             meshes[i].name = texturesMeshes[i].name;
         }
 
-        material = mat;
         material.mainTexture = Atlas;
     }
 
