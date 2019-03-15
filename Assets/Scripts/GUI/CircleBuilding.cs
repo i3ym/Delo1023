@@ -4,12 +4,9 @@ using UnityEngine;
 
 public class CircleBuilding : Circle
 {
-    void Awake()
+    override protected void AddItems()
     {
-        items.Add(new CircleItem(sprites[0], () =>
-        {
-            Debug.Log("house");
-        }));
+        items.Add(new CircleItem(sprites[0], () => Game.world.StartBuilding<BuildingHouse>()));
         items.Add(new CircleItem(sprites[1], () =>
         {
             Debug.Log("building");
@@ -25,6 +22,14 @@ public class CircleBuilding : Circle
         items.Add(new CircleItem(sprites[4], () =>
         {
             Debug.Log("fire");
+        }));
+        items.Add(new CircleItem(sprites[5], () =>
+        {
+            Debug.Log("school");
+        }));
+        items.Add(new CircleItem(sprites[6], () =>
+        {
+            Debug.Log("shop");
         }));
     }
 }

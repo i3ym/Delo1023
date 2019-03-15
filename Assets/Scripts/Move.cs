@@ -20,25 +20,21 @@ public class Move : MonoBehaviour
     void Start()
     {
         camera = Game.camera.GetComponent<Rigidbody>();
+        StartCoroutine(MouseMoveInWorld());
     }
     void Update()
     {
-        if (Game.Building)
-        {
-            if (Input.GetKeyDown(KeyCode.LeftShift)) speed = 1.5f;
-            else if (Input.GetKeyUp(KeyCode.LeftShift)) speed = 1f;
-        }
+        if (!Game.Building) return;
 
-        if (Game.Building || Input.GetMouseButton(1))
-        {
-            rotX -= Input.GetAxis(MouseY) * 4;
+        if (Input.GetKeyDown(KeyCode.LeftShift)) speed = 1.5f;
+        else if (Input.GetKeyUp(KeyCode.LeftShift)) speed = 1f;
 
-            if (!Game.Building && rotX < 0) rotX = 0;
-            else if (rotX > 89) rotX = 89;
-            else if (rotX < -89) rotX = -89;
+        rotX -= Input.GetAxis(MouseY) * 4;
 
-            camera.rotation = Quaternion.Euler(rotX, camera.rotation.eulerAngles.y + Input.GetAxis(MouseX) * 4, 0);
-        }
+        if (rotX > 89) rotX = 89;
+        else if (rotX < -89) rotX = -89;
+
+        camera.rotation = Quaternion.Euler(rotX, camera.rotation.eulerAngles.y + Input.GetAxis(MouseX) * 4, 0);
     }
     void FixedUpdate() //TODO diagonal working when not needed
     {
@@ -49,6 +45,43 @@ public class Move : MonoBehaviour
                 tempForward.Set(camera.transform.forward.x, 0, camera.transform.forward.z);
 
             camera.velocity = (tempForward * Input.GetAxis(Vertical) + camera.transform.right * Input.GetAxis(Horizontal) + camera.transform.up * Input.GetAxis(Diagonal)) * 20;
+        }
+    }
+
+    IEnumerator MouseMoveInWorld() //TODO FIX ненужный клик епта
+    {
+        bool move;
+        float time;
+        WaitUntil wait = new WaitUntil(() => Input.GetMouseButton(0));
+
+        while (true)
+        {
+            yield return wait;
+
+            move = true;
+            time = Time.time;
+            while (time > Time.time - .05f)
+            {
+                if (Input.GetMouseButtonUp(0))
+                {
+                    move = false;
+                    break;
+                }
+                yield return null;
+            }
+
+            if (!move) continue;
+
+            while (Input.GetMouseButton(0))
+            {
+                rotX -= Input.GetAxis(MouseY) * 4;
+
+                if (rotX < 0) rotX = 0;
+                else if (rotX > 89) rotX = 89;
+
+                camera.rotation = Quaternion.Euler(rotX, camera.rotation.eulerAngles.y + Input.GetAxis(MouseX) * 4, 0);
+                yield return null;
+            }
         }
     }
 }

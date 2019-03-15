@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CircleActions : Circle
 {
-    void Awake()
+    override protected void AddItems()
     {
         items.Add(new CircleItem(sprites[0], () =>
         {
@@ -18,6 +18,5 @@ public class CircleActions : Circle
         {
             Debug.Log("regen");
         }));
-        
     }
 }

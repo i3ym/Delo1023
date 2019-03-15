@@ -20,7 +20,6 @@ public class Game : MonoBehaviour
     public static Material material;
     public static bool Building = false;
     public static World world;
-    public static GameObject buildingChooser;
     public static List<Building> Buildings = new List<Building>();
     public static Game game = null;
 

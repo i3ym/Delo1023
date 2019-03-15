@@ -32,7 +32,6 @@ public class World : MonoBehaviour
 
         builder = gameObject.GetComponent<Builder>();
         layerMask = LayerMask.GetMask("Chunk");
-        Game.buildingChooser.SetActive(false);
 
         StartCoroutine(AddVillagersCoroutine());
         StartCoroutine(CreateChunksCoroutine());
@@ -47,7 +46,7 @@ public class World : MonoBehaviour
 
         if (Game.Building) return;
 
-        SelectChunk();
+        if (!Circle.isActive) SelectChunk();
     }
 
     IEnumerator AddVillagersCoroutine()
@@ -92,8 +91,6 @@ public class World : MonoBehaviour
                     while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
                     SelectChunk(tempchunk);
                 }
-
-                Game.buildingChooser.SetActive(SelectedChunks.Count != 0);
             }
             else
                 while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
