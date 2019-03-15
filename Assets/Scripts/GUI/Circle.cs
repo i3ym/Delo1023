@@ -39,7 +39,6 @@ public abstract class Circle : MonoBehaviour
 
         GameObject go;
         SVGImage svg;
-        float angle;
         for (int i = 0; i < items.Count; i++)
         {
             go = new GameObject("Image_" + i, typeof(RectTransform), typeof(SVGImage));
@@ -51,8 +50,7 @@ public abstract class Circle : MonoBehaviour
             svg.rectTransform.sizeDelta = svg.sprite.bounds.extents * thickness * 2f;
             svg.transform.localPosition = -Vector3.one;
 
-            angle = GetAngle(i) + GetAngle(1) / 2f;
-            svg.rectTransform.anchoredPosition = GetPosition(angle) * selectedMultiplier;
+            svg.rectTransform.anchoredPosition = GetIconPosition(i);
 
             items[i].transform = svg.rectTransform;
             Game.SvgImageToRaw(svg);
@@ -91,33 +89,35 @@ public abstract class Circle : MonoBehaviour
             if (mousePos.magnitude < inBound || mousePos.magnitude > outBound)
             {
                 CreateMesh();
+                for (int i = 0; i < items.Count; i++)
+                    items[i].transform.anchoredPosition = GetIconPosition(i);
+
                 return;
             }
 
             int selected = Mod(Mathf.FloorToInt(Mathf.Atan2(mousePos.y, mousePos.x) / Mathf.PI / 2f * count), count);
-            float angle;
 
             CreateMesh(selected);
 
             for (int i = 0; i < items.Count; i++)
             {
-                angle = GetAngle(i) + GetAngle(1) / 2f;
-                if (i == selected) items[i].transform.anchoredPosition = GetPosition(angle) * selectedMultiplier;
-                else items[i].transform.anchoredPosition = GetPosition(angle) * selectedMultiplier;
+                if (i == selected) items[i].transform.anchoredPosition = GetIconPosition(i) * selectedMultiplier;
+                else items[i].transform.anchoredPosition = GetIconPosition(i);
             }
 
             if (Input.GetMouseButtonDown(0) && selected < items.Count) items[selected].action();
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected abstract void AddItems();
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     Vector2 GetPosition(float angle) => new Vector2(Mathf.Cos(angle) * distance, Mathf.Sin(angle) * distance);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static int Mod(int x, int m) => (x % m + m) % m;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static float GetAngle(int i) => 2f * Mathf.PI / count * i;
+    static float GetAngle(int i) => 2f * Mathf.PI / count * i; // Mod(i, count);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    Vector2 GetIconPosition(int i) => (GetPosition(GetAngle(i)) + GetPosition(GetAngle(i + 1))).normalized * (distance + thickness / 4f);
     void CreateMesh(int selected = -1)
     {
         List<Vector3> verts = new List<Vector3>();

@@ -48,23 +48,26 @@ public class Move : MonoBehaviour
         }
     }
 
-    IEnumerator MouseMoveInWorld() //TODO FIX ненужный клик епта
+    IEnumerator MouseMoveInWorld()
     {
+        Vector3 startPos;
         bool move;
         float time;
-        WaitUntil wait = new WaitUntil(() => Input.GetMouseButton(0));
+        WaitUntil wait = new WaitUntil(() => Input.GetMouseButtonDown(0));
 
         while (true)
         {
             yield return wait;
 
-            move = true;
+            move = false;
             time = Time.time;
-            while (time > Time.time - .05f)
+
+            startPos = Input.mousePosition;
+            while (Input.GetMouseButton(0))
             {
-                if (Input.GetMouseButtonUp(0))
+                if ((Input.mousePosition - startPos).magnitude > 10f)
                 {
-                    move = false;
+                    move = true;
                     break;
                 }
                 yield return null;

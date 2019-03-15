@@ -35,6 +35,7 @@ public class World : MonoBehaviour
 
         StartCoroutine(AddVillagersCoroutine());
         StartCoroutine(CreateChunksCoroutine());
+        StartCoroutine(SelectChunkCoroutine());
     }
     void Update()
     {
@@ -45,8 +46,6 @@ public class World : MonoBehaviour
         }
 
         if (Game.Building) return;
-
-        if (!Circle.isActive) SelectChunk();
     }
 
     IEnumerator AddVillagersCoroutine()
@@ -67,6 +66,34 @@ public class World : MonoBehaviour
                 yield return null;
             }
     }
+    IEnumerator SelectChunkCoroutine()
+    {
+        Vector3 startPos;
+        bool exit;
+        float time;
+        WaitUntil wait = new WaitUntil(() => Input.GetMouseButtonDown(0));
+
+        while (true)
+        {
+            yield return wait;
+
+            exit = false;
+            time = Time.time;
+
+            startPos = Input.mousePosition;
+            while (Input.GetMouseButton(0))
+            {
+                if ((Input.mousePosition - startPos).magnitude > 10f)
+                {
+                    exit = true;
+                    break;
+                }
+                yield return null;
+            }
+
+            if (!exit) SelectChunk();
+        }
+    }
 
     public void Invoke(Action action)
     {
@@ -75,7 +102,7 @@ public class World : MonoBehaviour
     }
     void SelectChunk()
     {
-        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+        if (!Circle.isActive && !EventSystem.current.IsPointerOverGameObject())
         {
             if (Physics.Raycast(Game.camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f, layerMask))
             { //TODO shift=
