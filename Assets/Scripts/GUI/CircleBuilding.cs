@@ -31,5 +31,13 @@ public class CircleBuilding : Circle
         {
             Debug.Log("shop");
         }));
+        items.Add(new CircleItem(sprites[7], () =>
+        {
+            Debug.Log("energy");
+        }));
+        items.Add(new CircleItem(sprites[8], () =>
+        {
+            Debug.Log("trash");
+        }));
     }
 }

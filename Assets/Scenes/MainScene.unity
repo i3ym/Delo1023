@@ -349,7 +349,7 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 1
+  m_Lightmapping: 4
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
@@ -428,7 +428,7 @@ MonoBehaviour:
   thickness: 100
   distance: 150
   inBound: 0
-  outBound: 300
+  outBound: 280
   canvas: {fileID: 784258107}
 --- !u!1 &221364281
 GameObject:
@@ -1193,6 +1193,7 @@ GameObject:
   - component: {fileID: 534669906}
   - component: {fileID: 534669912}
   - component: {fileID: 534669911}
+  - component: {fileID: 534669913}
   m_Layer: 8
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1240,12 +1241,12 @@ Camera:
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 36119
-  m_RenderingPath: -1
+  m_RenderingPath: 3
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 1
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 1
   m_OcclusionCulling: 1
@@ -1346,7 +1347,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
@@ -1357,8 +1358,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   stopNaNPropagation: 1
-  finalBlitToCameraTarget: 1
-  antialiasingMode: 0
+  finalBlitToCameraTarget: 0
+  antialiasingMode: 1
   temporalAntialiasing:
     jitterSpread: 0.75
     sharpness: 0.25
@@ -1421,6 +1422,24 @@ MonoBehaviour:
   blockChooser: {fileID: 1953579760}
   OldCameraPosition: {x: 0, y: 0, z: 0}
   OldCameraRotation: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &534669913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_GeneratorAsset: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sharedProfile: {fileID: 11400000, guid: d18ecd2503903dedf8b5c878be148f9d, type: 2}
+  isGlobal: 1
+  blendDistance: 0
+  weight: 1
+  priority: 0
 --- !u!1 &543960189
 GameObject:
   m_ObjectHideFlags: 0
@@ -2121,10 +2140,12 @@ MonoBehaviour:
   - {fileID: 3286163911610860551, guid: c6e5fda362260c4ae85073062036172e, type: 3}
   - {fileID: 3286163911610860551, guid: dabe41df41c647729af86ee3340539e4, type: 3}
   - {fileID: 3286163911610860551, guid: 533076c2ba2e49930b0c032442e85be2, type: 3}
+  - {fileID: 3286163911610860551, guid: f70bacc08075a13688e3ae7233729c2d, type: 3}
+  - {fileID: 3286163911610860551, guid: d5c39db89389aca369ff2ac4e89b9c7d, type: 3}
   materialSvg: {fileID: 2100000, guid: 5f926510c5c8080e5a4fa863e1dbdd42, type: 2}
   thickness: 100
   distance: 300
-  inBound: 300
+  inBound: 281
   outBound: -1
   canvas: {fileID: 784258107}
 --- !u!1 &995220500

@@ -53,13 +53,26 @@ public class Chunk
 
     void Generate()
     {
+        const float seed = .5f;
+
         for (int xx = 0; xx < maxX; xx++)
-            for (int yy = 0; yy < 9; yy++)
-                for (int zz = 0; zz < maxZ; zz++)
-                    SetBlock(xx, yy, zz, Block.Dirt.Instance(), update : false, rotation : 0);
-        for (int xx = 0; xx < maxX; xx++)
+        //Parallel.For(0, maxX, (int xx, ParallelLoopState _) =>
+        {
+            int perlin;
             for (int zz = 0; zz < maxZ; zz++)
-                SetBlock(xx, 9, zz, Block.Grass.Instance(), update : false, rotation : 0);
+            {
+                perlin = (int) (Perlin.Noise((xx + (X * maxX)) / (float) (maxX * World.sizeX), (zz + (Z * maxZ)) / (float) (maxZ * World.sizeZ)) * 30f) + 20;
+                perlin += (int) (Perlin.Noise(Mathf.Pow(xx + (X * maxX), seed), Mathf.Pow(zz + (Z * maxZ), seed)) * 30f);
+                perlin/=4;
+
+                perlin = Math.Max(perlin, 0);
+
+                for (int yy = 0; yy < perlin; yy++)
+                    SetBlock(xx, yy, zz, Block.Dirt.Instance(), update : false, rotation : 0);
+
+                SetBlock(xx, perlin, zz, Block.Grass.Instance(), update : false, rotation : 0);
+            }
+        } //);
     }
     public int CalculatePrice()
     {

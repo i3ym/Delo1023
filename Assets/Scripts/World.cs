@@ -143,12 +143,12 @@ public class World : MonoBehaviour
             foreach (Chunk cc in c.building.Chunks)
             {
                 SelectedChunks.Remove(cc);
-                SetChunkTint(cc, Color.white);
+                ResetChunkTint(cc);
             }
         else
         {
             SelectedChunks.Remove(c);
-            SetChunkTint(c, Color.white);
+            ResetChunkTint(c);
         }
     }
     public Chunk GetChunk(int x, int z) => Chunks[x / Chunk.maxX, z / Chunk.maxZ];
@@ -156,7 +156,12 @@ public class World : MonoBehaviour
     {
         foreach (Chunk c in Chunks)
             foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
-                r.material.color = Color.white;
+                r.sharedMaterial = Game.material;
+    }
+    void ResetChunkTint(Chunk c)
+    {
+        foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
+            r.sharedMaterial = Game.material;
     }
     void SetChunkTint(Chunk c, Color clr)
     {
