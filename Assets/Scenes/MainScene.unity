@@ -2142,6 +2142,8 @@ MonoBehaviour:
   - {fileID: 3286163911610860551, guid: 533076c2ba2e49930b0c032442e85be2, type: 3}
   - {fileID: 3286163911610860551, guid: f70bacc08075a13688e3ae7233729c2d, type: 3}
   - {fileID: 3286163911610860551, guid: d5c39db89389aca369ff2ac4e89b9c7d, type: 3}
+  - {fileID: 3286163911610860551, guid: cdf3383589a673d33bdb7bcb7c0c369c, type: 3}
+  - {fileID: 3286163911610860551, guid: 8eb745380b2a1b5009bdce402f64e53d, type: 3}
   materialSvg: {fileID: 2100000, guid: 5f926510c5c8080e5a4fa863e1dbdd42, type: 2}
   thickness: 100
   distance: 300
@@ -2818,6 +2820,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1748182392}
   - component: {fileID: 1748182390}
+  - component: {fileID: 1748182391}
   m_Layer: 0
   m_Name: GUICamera
   m_TagString: Untagged
@@ -2868,6 +2871,67 @@ Camera:
   m_OcclusionCulling: 0
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1748182391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1748182389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_GeneratorAsset: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  volumeTrigger: {fileID: 1748182392}
+  volumeLayer:
+    serializedVersion: 2
+    m_Bits: 32
+  stopNaNPropagation: 1
+  finalBlitToCameraTarget: 1
+  antialiasingMode: 2
+  temporalAntialiasing:
+    jitterSpread: 0.1
+    sharpness: 0
+    stationaryBlending: 0.95
+    motionBlending: 0.85
+  subpixelMorphologicalAntialiasing:
+    quality: 0
+  fastApproximateAntialiasing:
+    fastMode: 0
+    keepAlpha: 0
+  fog:
+    enabled: 1
+    excludeSkybox: 1
+  debugLayer:
+    lightMeter:
+      width: 512
+      height: 256
+      showCurves: 1
+    histogram:
+      width: 512
+      height: 256
+      channel: 3
+    waveform:
+      exposure: 0.12
+      height: 256
+    vectorscope:
+      size: 256
+      exposure: 0.12
+    overlaySettings:
+      linearDepth: 0
+      motionColorIntensity: 4
+      motionGridSize: 64
+      colorBlindnessType: 0
+      colorBlindnessStrength: 1
+  m_Resources: {fileID: 11400000, guid: d82512f9c8e5d4a4d938b575d47f88d4, type: 2}
+  m_ShowToolkit: 0
+  m_ShowCustomSorter: 0
+  breakBeforeColorGrading: 0
+  m_BeforeTransparentBundles: []
+  m_BeforeStackBundles: []
+  m_AfterStackBundles: []
 --- !u!4 &1748182392
 Transform:
   m_ObjectHideFlags: 0
