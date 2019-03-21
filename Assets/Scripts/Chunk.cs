@@ -61,11 +61,9 @@ public class Chunk
             int perlin;
             for (int zz = 0; zz < maxZ; zz++)
             {
-                perlin = (int) (Perlin.Noise((xx + (X * maxX)) / (float) (maxX * World.sizeX), (zz + (Z * maxZ)) / (float) (maxZ * World.sizeZ)) * 30f) + 20;
-                perlin += (int) (Perlin.Noise(Mathf.Pow(xx + (X * maxX), seed), Mathf.Pow(zz + (Z * maxZ), seed)) * 30f);
-                perlin/=4;
-
-                perlin = Math.Max(perlin, 0);
+                perlin = (int) (Perlin.Noise((xx + (X * maxX)) / (float) (maxX * World.sizeX), (zz + (Z * maxZ)) / (float) (maxZ * World.sizeZ)) * 3f) + 2;
+                perlin += (int) (Perlin.Noise(Mathf.Pow(xx + (X * maxX), seed), Mathf.Pow(zz + (Z * maxZ), seed)) * 3f);
+                perlin = Math.Max(perlin, 0) + 30;
 
                 for (int yy = 0; yy < perlin; yy++)
                     SetBlock(xx, yy, zz, Block.Dirt.Instance(), update : false, rotation : 0);

@@ -71,7 +71,7 @@ public class World : MonoBehaviour
         Vector3 startPos;
         bool exit;
         float time;
-        WaitUntil wait = new WaitUntil(() => Input.GetMouseButtonDown(0));
+        WaitUntil wait = new WaitUntil(() => Input.GetMouseButtonDown(0) && !Game.Building);
 
         while (true)
         {

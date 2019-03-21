@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public static class Perlin
@@ -83,7 +84,9 @@ public static class Perlin
         return f;
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static float Fade(float t) => t * t * t * (t * (t * 6 - 15) + 10);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static float Lerp(float t, float a, float b) => a + t * (b - a);
     static float Grad(int hash, float x) => (hash & 1) == 0 ? x : -x;
     static float Grad(int hash, float x, float y) => ((hash & 1) == 0 ? x : -x) + ((hash & 2) == 0 ? y : -y);
