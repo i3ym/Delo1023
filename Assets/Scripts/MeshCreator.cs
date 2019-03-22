@@ -15,7 +15,6 @@ static class MeshCreator
     static List<Vector3>[] vertss;
     static List<int>[] triss;
     static List<Vector2>[] uvss;
-    static int indx;
 
     public static void UpdateMeshFast(Chunk c, int x, int y, int z, Mesh mesh, int meshIndex, Block block) //TODO optimize
     {
@@ -258,7 +257,7 @@ static class MeshCreator
 
         for (int i = 0; i < vertss.Length; i++)
         {
-            indx = verts.Count;
+            int indx = verts.Count;
             verts.AddRange(vertss[i]);
             uv.AddRange(uvss[i]);
 
