@@ -18,9 +18,9 @@ public class MultiblockComponent : BComponent
         b.AddComponent<MultiblockPartComponent>(x, y, z, parentBlock);
 
         bool canPlaceThis;
-        Chunk chunk;
+        Chunk chunk = null;
 
-        foreach (Vector3Int pos in Locations) //TODO do better
+        foreach (Vector3Int pos in Locations)
         {
             if (pos.x + x < 0 || pos.x + x > World.sizeX * Chunk.maxX - 1 || pos.z + z < 0 || pos.z + z > World.sizeZ * Chunk.maxZ - 1 || Game.world.GetBlock(x + pos.x, y + pos.y, z + pos.z) != null) return false;
 
@@ -38,7 +38,9 @@ public class MultiblockComponent : BComponent
         }
 
         foreach (Vector3Int pos in Locations)
-            Game.world.SetBlock(x + pos.x, y + pos.y, z + pos.z, b);
+            Game.world.SetBlock(x + pos.x, y + pos.y, z + pos.z, b, update : false);
+
+        MeshCreator.UpdateMesh(chunk, chunk.Blocks);
 
         return true;
     }

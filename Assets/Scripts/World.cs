@@ -9,8 +9,8 @@ using UnityEngine.UI;
 
 public class World : MonoBehaviour
 {
-    public static int sizeX = 5;
-    public static int sizeZ = 5;
+    public static int sizeX = 1;
+    public static int sizeZ = 1;
 
     [HideInInspector]
     public Builder builder;
@@ -22,6 +22,8 @@ public class World : MonoBehaviour
     static System.Random rnd = new System.Random();
     static List<Action> Actions = new List<Action>();
     static bool invoke = false;
+    static List<Chunk> ToUpdate = new List<Chunk>();
+    static bool UpdateChunks = false;
 
     Chunk tempchunk;
 
@@ -43,6 +45,13 @@ public class World : MonoBehaviour
         {
             invoke = false;
             foreach (Action action in Actions) action();
+        }
+
+        if (UpdateChunks)
+        {
+            UpdateChunks = false;
+            foreach (Chunk c in ToUpdate)
+                MeshCreator.UpdateMesh(c, c.Blocks);
         }
 
         if (Game.Building) return;
@@ -95,6 +104,13 @@ public class World : MonoBehaviour
         }
     }
 
+    public void UpdateChunk(Chunk c)
+    {
+        if (ToUpdate.Contains(c)) return;
+
+        ToUpdate.Add(c);
+        UpdateChunks = true;
+    }
     public void Invoke(Action action)
     {
         Actions.Add(action);
@@ -212,11 +228,11 @@ public class World : MonoBehaviour
         builder.enabled = true;
     }
 
-    public bool SetBlock(int x, int y, int z, Block b, bool updatefast = false)
+    public bool SetBlock(int x, int y, int z, Block b, bool updatefast = false, bool update = true)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return false;
 
-        return Chunks[x / Chunk.maxX, z / Chunk.maxZ].SetBlock(x % Chunk.maxX, y, z % Chunk.maxZ, b, updateFast : updatefast);
+        return Chunks[x / Chunk.maxX, z / Chunk.maxZ].SetBlock(x % Chunk.maxX, y, z % Chunk.maxZ, b, updateFast : updatefast, update : update);
     }
     public void RemoveBlock(int x, int y, int z, bool shootEvent = true)
     {

@@ -24,7 +24,7 @@ public abstract class Circle : MonoBehaviour
     [SerializeField]
     protected float inBound, outBound;
     [SerializeField]
-    Canvas canvas;
+    Canvas canvas = null;
 
     void Awake()
     {
