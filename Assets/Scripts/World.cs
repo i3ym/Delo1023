@@ -41,6 +41,7 @@ public class World : MonoBehaviour
     }
     void Update()
     {
+Debug.DrawLine(camera.position, camera.position + camera.forward *20f, Color.red);
         if (invoke)
         {
             invoke = false;
@@ -118,8 +119,47 @@ public class World : MonoBehaviour
     }
     void SelectChunk()
     {
+        float getDistance(float height)
+        {
+            float angle = Vector3.Angle(camera.forward, Vector3.zero);
+            Debug.Log(angle);
+            return height / (2f * Mathf.Cos(angle)) * 2f;
+        }
+
         if (!Circle.isActive && !EventSystem.current.IsPointerOverGameObject())
         {
+            Ray ray = new Ray(camera.position, camera.forward);
+            Vector3 point;
+
+            for (float distance = 0f; distance < 20f; distance++)
+            {
+                point = ray.GetPoint(distance);
+                if (GetBlock(point) != null)
+                {
+                    tempchunk = GetChunk((int) point.x, (int) point.z);
+
+                    if (Input.GetKey(KeyCode.LeftControl))
+                    {
+                        if (SelectedChunks.Contains(tempchunk)) UnselectChunk(tempchunk);
+                        else SelectChunk(tempchunk);
+                    }
+                    else
+                    {
+                        while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
+                        SelectChunk(tempchunk);
+                    }
+
+                    return;
+                }
+            }
+            while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
+
+            // Debug.Log(getDistance(1));
+
+            //c=a/(2 cos⁡β )*2 
+
+            /* 
+
             if (Physics.Raycast(Game.camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f, layerMask))
             { //TODO shift=
                 tempchunk = Chunks[(int) hit.transform.position.x / Chunk.maxX, (int) hit.transform.position.z / Chunk.maxZ];
@@ -137,6 +177,7 @@ public class World : MonoBehaviour
             }
             else
                 while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
+                */
         }
     }
     void SelectChunk(Chunk c)
@@ -246,4 +287,5 @@ public class World : MonoBehaviour
 
         return Chunks[x / Chunk.maxX, z / Chunk.maxZ].GetBlock(x % Chunk.maxX, y, z % Chunk.maxZ);
     }
+    public Block GetBlock(Vector3 pos) => GetBlock((int) pos.x, (int) pos.y, (int) pos.z);
 }
