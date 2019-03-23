@@ -121,12 +121,13 @@ public class World : MonoBehaviour
         if (!Circle.isActive && !EventSystem.current.IsPointerOverGameObject())
         {
             Vector3 point = camera.position;
-            Vector3 dir = Game.camera.ScreenPointToRay(Input.mousePosition).direction + point - new Vector3Int((int) point.x, (int) point.y, (int) point.z);
+            point -= new Vector3Int((int) point.x, (int) point.y, (int) point.z);
+            Vector3 dir = Game.camera.ScreenPointToRay(Input.mousePosition).direction;
             float add;
 
             for (int i = 0; i < 100; i++)
             {
-                add = 1f - Mathf.Max(dir.x, dir.y, dir.z);
+                add = 1f / Mathf.Max(dir.x, dir.y, dir.z);
                 dir += dir * add;
                 point += dir;
 
@@ -134,7 +135,7 @@ public class World : MonoBehaviour
                 if (dir.y > 1f) dir.y -= 1f;
                 if (dir.z > 1f) dir.z -= 1f;
 
-            //    dir += Vector3.one * .00001f;
+                //    dir += Vector3.one * .00001f;
 
                 Debug.DrawLine(point, point + Vector3.up / 4f, Color.red, .5f);
                 if (GetBlock(point) != null)
