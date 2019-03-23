@@ -18,6 +18,7 @@ public class Block
     public static BlockInfo DoorSupermarket { get; private set; }
     public static BlockInfo GlassPane { get; private set; }
     public static BlockInfo StreetLight { get; private set; }
+    public static BlockInfo WallLamp { get; private set; }
 
     public BlockInfo Info;
     Dictionary<Type, BComponent> components = new Dictionary<Type, BComponent>();
@@ -48,6 +49,13 @@ public class Block
             {
                 typeof(LightComponent),
                 new object[] { new LightHolder(new Vector3(0f, 3.94141f, -.245556f), new Vector3(70f, 180f, 0f), LightType.Spot, 10f, 80, Color.white, 2f) }
+            }
+        });
+        WallLamp = new BlockInfoMesh("wall_lamp", components : new Dictionary<Type, object[]>()
+        {
+            {
+                typeof(LightComponent),
+                new object[] { new LightHolder(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), LightType.Spot, 10f, 80, Color.white, 2f) }
             }
         });
     }
