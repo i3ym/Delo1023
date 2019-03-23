@@ -44,7 +44,7 @@ public class Move : MonoBehaviour
             if (Input.GetAxis(Vertical) != 0f)
                 tempForward.Set(camera.transform.forward.x, 0, camera.transform.forward.z);
 
-            camera.velocity = (tempForward * Input.GetAxis(Vertical) + camera.transform.right * Input.GetAxis(Horizontal) + camera.transform.up * Input.GetAxis(Diagonal)) * 20;
+            camera.velocity = (tempForward * Input.GetAxis(Vertical) + camera.transform.right * Input.GetAxis(Horizontal) + Vector3.up * Input.GetAxis(Diagonal)) * 20;
         }
     }
 
