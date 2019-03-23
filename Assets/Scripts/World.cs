@@ -41,7 +41,6 @@ public class World : MonoBehaviour
     }
     void Update()
     {
-Debug.DrawLine(camera.position, camera.position + camera.forward *20f, Color.red);
         if (invoke)
         {
             invoke = false;
@@ -119,21 +118,25 @@ Debug.DrawLine(camera.position, camera.position + camera.forward *20f, Color.red
     }
     void SelectChunk()
     {
-        float getDistance(float height)
-        {
-            float angle = Vector3.Angle(camera.forward, Vector3.zero);
-            Debug.Log(angle);
-            return height / (2f * Mathf.Cos(angle)) * 2f;
-        }
-
         if (!Circle.isActive && !EventSystem.current.IsPointerOverGameObject())
         {
-            Ray ray = new Ray(camera.position, camera.forward);
-            Vector3 point;
+            Vector3 point = camera.position;
+            Vector3 dir = Game.camera.ScreenPointToRay(Input.mousePosition).direction + point - new Vector3Int((int) point.x, (int) point.y, (int) point.z);
+            float add;
 
-            for (float distance = 0f; distance < 20f; distance++)
+            for (int i = 0; i < 100; i++)
             {
-                point = ray.GetPoint(distance);
+                add = 1f - Mathf.Max(dir.x, dir.y, dir.z);
+                dir += dir * add;
+                point += dir;
+
+                if (dir.x > 1f) dir.x -= 1f;
+                if (dir.y > 1f) dir.y -= 1f;
+                if (dir.z > 1f) dir.z -= 1f;
+
+            //    dir += Vector3.one * .00001f;
+
+                Debug.DrawLine(point, point + Vector3.up / 4f, Color.red, .5f);
                 if (GetBlock(point) != null)
                 {
                     tempchunk = GetChunk((int) point.x, (int) point.z);
@@ -153,31 +156,6 @@ Debug.DrawLine(camera.position, camera.position + camera.forward *20f, Color.red
                 }
             }
             while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
-
-            // Debug.Log(getDistance(1));
-
-            //c=a/(2 cos⁡β )*2 
-
-            /* 
-
-            if (Physics.Raycast(Game.camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f, layerMask))
-            { //TODO shift=
-                tempchunk = Chunks[(int) hit.transform.position.x / Chunk.maxX, (int) hit.transform.position.z / Chunk.maxZ];
-
-                if (Input.GetKey(KeyCode.LeftControl))
-                {
-                    if (SelectedChunks.Contains(tempchunk)) UnselectChunk(tempchunk);
-                    else SelectChunk(tempchunk);
-                }
-                else
-                {
-                    while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
-                    SelectChunk(tempchunk);
-                }
-            }
-            else
-                while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
-                */
         }
     }
     void SelectChunk(Chunk c)
