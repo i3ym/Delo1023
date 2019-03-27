@@ -59,7 +59,6 @@ public class LightComponent : BComponent
     public override bool OnBreak(int x, int y, int z)
     {
         foreach (GameObject go in lightHolders) GameObject.Destroy(go);
-        lightHolders.Clear();
 
         return true;
     }

@@ -168,7 +168,7 @@ public class Chunk
             go.AddComponent<MeshFilter>().mesh = mesh;
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
             mr.material = Game.material;
-            mr.shadowCastingMode = ShadowCastingMode.TwoSided;
+            mr.shadowCastingMode = ShadowCastingMode.On;
 
             go.transform.SetParent(parent.transform);
             go.transform.position = parent.transform.position;

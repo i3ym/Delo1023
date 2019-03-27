@@ -11,6 +11,8 @@ public class Block
     public static BlockInfo Grass { get; private set; }
     public static BlockInfo Dirt { get; private set; }
     public static BlockInfo Planks { get; private set; }
+    public static BlockInfo Log { get; private set; }
+    public static BlockInfo Leaves { get; private set; }
     public static BlockInfo Bricks { get; private set; }
     public static BlockInfo Door { get; private set; }
     public static BlockInfo Trumpet { get; private set; }
@@ -29,9 +31,20 @@ public class Block
         Transparent = new BlockInfoMesh("transparent", 0);
         Blocks.Remove(Transparent);
 
+        Func<int, int, int, int, bool> wallLampFunc = (x, y, z, rot) =>
+        {
+            if (rot == 0) return World.GetBlock(x, y, z + 1) != null;
+            if (rot == 1) return World.GetBlock(x + 1, y, z) != null;
+            if (rot == 2) return World.GetBlock(x, y, z - 1) != null;
+            if (rot == 3) return World.GetBlock(x - 1, y, z) != null;
+            return true;
+        };
+
         Grass = new BlockInfo("grass", new string[] { "dirt", "dirt", "grass", "dirt", "dirt", "dirt" }, false, price : 0);
         Dirt = new BlockInfo("dirt", price : 0);
         Planks = new BlockInfo("planks", price : 10);
+        Log = new BlockInfo("log", price : 0);
+        Leaves = new BlockInfo("leaves", price : 0);
         Bricks = new BlockInfo("bricks", price : 10);
         Door = new BlockInfoMesh("door");
         DoorSupermarket = new BlockInfoMesh("door_supermarket");
@@ -44,18 +57,22 @@ public class Block
                 new object[] { "glass_pane_corner", "glass_pane_side", "glass_pane_center" }
             }
         });
-        StreetLight = new BlockInfoMesh("street_light", components : new Dictionary<Type, object[]>()
+        StreetLight = new BlockInfoMesh("street_light", price : 27, components : new Dictionary<Type, object[]>()
         {
             {
                 typeof(LightComponent),
                 new object[] { new LightHolder(new Vector3(0f, 3.94141f, -.245556f), new Vector3(70f, 180f, 0f), LightType.Spot, 10f, 80, Color.white, 2f) }
             }
         });
-        WallLamp = new BlockInfoMesh("wall_lamp", components : new Dictionary<Type, object[]>()
+        WallLamp = new BlockInfoMesh("wall_lamp", price : 13, components : new Dictionary<Type, object[]>()
         {
             {
+                typeof(PlaceRestrictorComponent),
+                new object[] { wallLampFunc }
+            },
+            {
                 typeof(LightComponent),
-                new object[] { new LightHolder(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), LightType.Spot, 10f, 80, Color.white, 2f) }
+                new object[] { new LightHolder(new Vector3(0f, .5f, .4f), new Vector3(0f, 0f, 0f), LightType.Point, 20f, 0, Color.white, 1f) }
             }
         });
     }
