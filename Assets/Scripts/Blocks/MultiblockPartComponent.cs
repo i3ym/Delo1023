@@ -15,7 +15,7 @@ public class MultiblockPartComponent : BComponent
 
     public override bool OnBreak(int x, int y, int z)
     {
-        Game.world.RemoveBlock(X, Y, Z);
+        World.RemoveBlock(X, Y, Z);
         return true;
     }
 }

@@ -12,8 +12,7 @@ public class World : MonoBehaviour
     public static int sizeX = 1;
     public static int sizeZ = 1;
 
-    [HideInInspector]
-    public Builder builder;
+    public static Builder builder;
     static Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
     static List<Chunk> SelectedChunks = new List<Chunk>();
     static RaycastHit hit;
@@ -52,6 +51,7 @@ public class World : MonoBehaviour
             UpdateChunks = false;
             foreach (Chunk c in ToUpdate)
                 MeshCreator.UpdateMesh(c, c.Blocks);
+            ToUpdate.Clear();
         }
 
         if (Game.Building) return;
@@ -120,43 +120,25 @@ public class World : MonoBehaviour
     {
         if (!Circle.isActive && !EventSystem.current.IsPointerOverGameObject())
         {
-            Vector3 point = camera.position;
-            point -= new Vector3Int((int) point.x, (int) point.y, (int) point.z);
-            Vector3 dir = Game.camera.ScreenPointToRay(Input.mousePosition).direction;
-            float add;
-
-            for (int i = 0; i < 100; i++)
+            Vector3Int? pos = BlockRaycast.RaycastBlockPosition(camera.position, Game.camera.ScreenPointToRay(Input.mousePosition).direction, .1f, 1000);
+            if (!pos.HasValue)
             {
-                add = 1f / Mathf.Max(dir.x, dir.y, dir.z);
-                dir += dir * add;
-                point += dir;
-
-                if (dir.x > 1f) dir.x -= 1f;
-                if (dir.y > 1f) dir.y -= 1f;
-                if (dir.z > 1f) dir.z -= 1f;
-
-                //    dir += Vector3.one * .00001f;
-
-                Debug.DrawLine(point, point + Vector3.up / 4f, Color.red, .5f);
-                if (GetBlock(point) != null)
-                {
-                    tempchunk = GetChunk((int) point.x, (int) point.z);
-
-                    if (Input.GetKey(KeyCode.LeftControl))
-                    {
-                        if (SelectedChunks.Contains(tempchunk)) UnselectChunk(tempchunk);
-                        else SelectChunk(tempchunk);
-                    }
-                    else
-                    {
-                        while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
-                        SelectChunk(tempchunk);
-                    }
-
-                    return;
-                }
+                while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
+                return;
             }
-            while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
+
+            tempchunk = GetChunk(pos.Value.x, pos.Value.z);
+
+            if (Input.GetKey(KeyCode.LeftControl))
+            {
+                if (SelectedChunks.Contains(tempchunk)) UnselectChunk(tempchunk);
+                else SelectChunk(tempchunk);
+            }
+            else
+            {
+                while (SelectedChunks.Count > 0) UnselectChunk(SelectedChunks[0]);
+                SelectChunk(tempchunk);
+            }
         }
     }
     void SelectChunk(Chunk c)
@@ -187,24 +169,24 @@ public class World : MonoBehaviour
             ResetChunkTint(c);
         }
     }
-    public Chunk GetChunk(int x, int z) => Chunks[x / Chunk.maxX, z / Chunk.maxZ];
-    public void ClearChunksTint()
+    public static Chunk GetChunk(int x, int z) => Chunks[x / Chunk.maxX, z / Chunk.maxZ];
+    public static void ClearChunksTint()
     {
         foreach (Chunk c in Chunks)
             foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
                 r.sharedMaterial = Game.material;
     }
-    void ResetChunkTint(Chunk c)
+    static void ResetChunkTint(Chunk c)
     {
         foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
             r.sharedMaterial = Game.material;
     }
-    void SetChunkTint(Chunk c, Color clr)
+    static void SetChunkTint(Chunk c, Color clr)
     {
         foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
             r.material.color = clr;
     }
-    public void StartBuilding<T>() where T : Building, new()
+    public static void StartBuilding<T>() where T : Building, new()
     {
         if (SelectedChunks.Count == 0) return;
 
@@ -248,23 +230,29 @@ public class World : MonoBehaviour
         builder.enabled = true;
     }
 
-    public bool SetBlock(int x, int y, int z, Block b, bool updatefast = false, bool update = true)
+    public static bool SetBlock(int x, int y, int z, Block b, bool updatefast = false, bool update = true)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return false;
 
         return Chunks[x / Chunk.maxX, z / Chunk.maxZ].SetBlock(x % Chunk.maxX, y, z % Chunk.maxZ, b, updateFast : updatefast, update : update);
     }
-    public void RemoveBlock(int x, int y, int z, bool shootEvent = true)
+    public static bool SetBlock(Vector3 pos, Block b, bool updatefast = false, bool update = true) => SetBlock((int) pos.x, (int) pos.y, (int) pos.z, b, updatefast, update);
+    public static bool SetBlock(Vector3Int pos, Block b, bool updatefast = false, bool update = true) => SetBlock(pos.x, pos.y, pos.z, b, updatefast, update);
+    public static void RemoveBlock(int x, int y, int z, bool shootEvent = true)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return;
 
         Chunks[x / Chunk.maxX, z / Chunk.maxZ].RemoveBlock(x % Chunk.maxX, y, z % Chunk.maxZ, shootEvent);
     }
-    public Block GetBlock(int x, int y, int z)
+    public static void RemoveBlock(Vector3 pos, bool shootEvent = true) => RemoveBlock((int) pos.x, (int) pos.y, (int) pos.z, shootEvent);
+    public static void RemoveBlock(Vector3Int pos, bool shootEvent = true) => RemoveBlock(pos.x, pos.y, pos.z, shootEvent);
+    public static Block GetBlock(int x, int y, int z)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return null;
 
         return Chunks[x / Chunk.maxX, z / Chunk.maxZ].GetBlock(x % Chunk.maxX, y, z % Chunk.maxZ);
     }
-    public Block GetBlock(Vector3 pos) => GetBlock((int) pos.x, (int) pos.y, (int) pos.z);
+    public static Block GetBlock(float x, float y, float z) => GetBlock((int) x, (int) y, (int) z);
+    public static Block GetBlock(Vector3 pos) => GetBlock((int) pos.x, (int) pos.y, (int) pos.z);
+    public static Block GetBlock(Vector3Int pos) => GetBlock(pos.x, pos.y, pos.z);
 }

@@ -17,8 +17,6 @@ public class Builder : MonoBehaviour
     [SerializeField]
     Button ButtonContinue = null, ButtonExit = null;
     [SerializeField]
-    World world = null;
-    [SerializeField]
     BlockChooser blockChooser = null;
 
     [HideInInspector]
@@ -29,7 +27,6 @@ public class Builder : MonoBehaviour
     Move move;
     new Transform camera;
     int layerMask;
-    RaycastHit hit;
     int selectedBlock = 0;
 
     float tempScroll;
@@ -47,7 +44,7 @@ public class Builder : MonoBehaviour
         }));
         ButtonExit.onClick.AddListener(new UnityAction(() =>
         {
-            world.ClearChunksTint();
+            World.ClearChunksTint();
 
             building.Recalculate();
 
@@ -75,12 +72,14 @@ public class Builder : MonoBehaviour
 
     void SetOutline()
     {
-        if (Physics.Raycast(camera.position, camera.forward, out hit, 500f, layerMask))
+        Vector3Int? pos = BlockRaycast.RaycastBlockPosition(camera.position, camera.forward, .1f, 1000);
+        if (pos.HasValue)
         {
             const float size = 1.05f;
             const float minadd = (size - 1f) / 2f;
             Color clr = new Color(.1f, .1f, .1f);
-            Vector3 blockPos = new Vector3((int) (hit.point.x - hit.normal.x * .01f) - minadd, (int) (hit.point.y - hit.normal.y * .01f) - minadd, (int) (hit.point.z - hit.normal.z * .01f) - minadd);
+            Vector3 blockPos = pos.Value - Vector3.one * minadd;
+            //    Vector3 blockPos = new Vector3((int) (hit.point.x - hit.normal.x * .01f) - minadd, (int) (hit.point.y - hit.normal.y * .01f) - minadd, (int) (hit.point.z - hit.normal.z * .01f) - minadd);
             Vector3 temp;
 
             GL.PushMatrix();
@@ -156,18 +155,15 @@ public class Builder : MonoBehaviour
     }
     void PlaceBlock()
     {
-        if (move.enabled && Physics.Raycast(camera.position, camera.forward, out hit, 500f, layerMask))
+        Vector3Int? pos = BlockRaycast.RaycastBlockForPlace(camera.position, camera.forward, .1f, 1000);
+        if (move.enabled && pos.HasValue)
         {
-            int x = (int) (hit.point.x - hit.normal.x * .01f) + (int) hit.normal.x;
-            int y = (int) (hit.point.y - hit.normal.y * .01f) + (int) hit.normal.y;
-            int z = (int) (hit.point.z - hit.normal.z * .01f) + (int) hit.normal.z;
-
             foreach (Chunk c in building.Chunks)
-                if (c == world.GetChunk(x, z))
+                if (c == World.GetChunk(pos.Value.x, pos.Value.z))
                 {
                     if (Game.Money - Block.Blocks[selectedBlock].Price >= 0)
                     {
-                        if (world.SetBlock(x, y, z, Block.Blocks[selectedBlock].Instance(), true))
+                        if (World.SetBlock(pos.Value, Block.Blocks[selectedBlock].Instance()))
                             Game.Money -= Block.Blocks[selectedBlock].Price;
                     }
                     return;
@@ -176,12 +172,13 @@ public class Builder : MonoBehaviour
     }
     void RemoveBlock()
     {
-        if (Physics.Raycast(camera.position, camera.forward, out hit, 500f, layerMask))
+        Vector3Int? pos = BlockRaycast.RaycastBlockPosition(camera.position, camera.forward, .1f, 1000);
+        if (move.enabled && pos.HasValue)
         {
-            MultiblockPartComponent mpc = world.GetBlock((int) (hit.point.x - hit.normal.x * .01f), (int) (hit.point.y - hit.normal.y * .01f), (int) (hit.point.z - hit.normal.z * .01f)).GetComponent<MultiblockPartComponent>();
+            MultiblockPartComponent mpc = World.GetBlock(pos.Value + (Vector3) pos.Value * float.Epsilon).GetComponent<MultiblockPartComponent>();
             if (mpc != null) Game.Money += mpc.parentBlock.Price;
             else Game.Money += Block.Blocks[selectedBlock].Price;
-            world.RemoveBlock((int) (hit.point.x - hit.normal.x * .01f), (int) (hit.point.y - hit.normal.y * .01f), (int) (hit.point.z - hit.normal.z * .01f));
+            World.RemoveBlock(pos.Value);
         }
     }
 
