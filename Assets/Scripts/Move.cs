@@ -10,8 +10,8 @@ public class Move : MonoBehaviour
     public const string MouseX = "Mouse X";
     public const string MouseY = "Mouse Y";
 
+    new Transform transform;
     static Vector3 up = Vector3.up;
-    new Rigidbody camera;
     float speed = 1f;
     float rotX = 0;
 
@@ -19,7 +19,7 @@ public class Move : MonoBehaviour
 
     void Start()
     {
-        camera = Game.camera.GetComponent<Rigidbody>();
+        transform = Camera.main.transform;
         StartCoroutine(MouseMoveInWorld());
     }
     void Update()
@@ -34,17 +34,33 @@ public class Move : MonoBehaviour
         if (rotX > 89) rotX = 89;
         else if (rotX < -89) rotX = -89;
 
-        camera.rotation = Quaternion.Euler(rotX, camera.rotation.eulerAngles.y + Input.GetAxis(MouseX) * 4, 0);
+        transform.rotation = Quaternion.Euler(rotX, transform.eulerAngles.y + Input.GetAxis(MouseX) * 4, 0);
     }
-    void FixedUpdate() //TODO diagonal working when not needed
+    void FixedUpdate()
     {
-        if (Game.Building) camera.velocity = (camera.transform.forward * (Input.GetAxis(Vertical) * speed) + camera.transform.right * (Input.GetAxis(Horizontal) * speed) + up * (Input.GetAxis(Diagonal) * speed)) * 20;
+        if (Game.Building)
+        {
+            const float hitbox = .4f;
+            Vector3 add = (transform.forward * (Input.GetAxis(Vertical) * speed) + transform.right * (Input.GetAxis(Horizontal) * speed) + transform.up * (Input.GetAxis(Diagonal) * speed)) / 2f;
+            float x = transform.position.x;
+            float y = transform.position.y;
+            float z = transform.position.z;
+
+            if (World.GetBlock(x + hitbox, y, z) != null && add.x > 0f) add.x = 0f;
+            else if (World.GetBlock(x - hitbox, y, z) != null && add.x < 0f) add.x = 0f;
+            if (World.GetBlock(x, y + hitbox, z) != null && add.y > 0f) add.y = 0f;
+            else if (World.GetBlock(x, y - hitbox, z) != null && add.y < 0f) add.y = 0f;
+            if (World.GetBlock(x, y, z + hitbox) != null && add.z > 0f) add.z = 0f;
+            else if (World.GetBlock(x, y, z - hitbox) != null && add.z < 0f) add.z = 0f;
+
+            transform.position += add;
+        }
         else
         {
             if (Input.GetAxis(Vertical) != 0f)
-                tempForward.Set(camera.transform.forward.x, 0, camera.transform.forward.z);
+                tempForward.Set(transform.forward.x, 0, transform.forward.z);
 
-            camera.velocity = (tempForward * Input.GetAxis(Vertical) + camera.transform.right * Input.GetAxis(Horizontal) + Vector3.up * Input.GetAxis(Diagonal)) * 20;
+            transform.position += (tempForward * Input.GetAxis(Vertical) + transform.right * Input.GetAxis(Horizontal) + transform.up * Input.GetAxis(Diagonal)) / 2f;
         }
     }
 
@@ -82,7 +98,7 @@ public class Move : MonoBehaviour
                 if (rotX < 0) rotX = 0;
                 else if (rotX > 89) rotX = 89;
 
-                camera.rotation = Quaternion.Euler(rotX, camera.rotation.eulerAngles.y + Input.GetAxis(MouseX) * 4, 0);
+                transform.rotation = Quaternion.Euler(rotX, transform.eulerAngles.y + Input.GetAxis(MouseX) * 4, 0);
                 yield return null;
             }
         }

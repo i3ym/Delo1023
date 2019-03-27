@@ -12,17 +12,25 @@ static class MeshCreator
     static List<Vector3> verts = new List<Vector3>();
     static List<Vector2> uv = new List<Vector2>();
 
-    static List<Vector3>[] vertss;
-    static List<int>[] triss;
-    static List<Vector2>[] uvss;
+    static List<Vector3>[] vertss = new List<Vector3>[Chunk.maxX];
+    static List<int>[] triss = new List<int>[Chunk.maxX];
+    static List<Vector2>[] uvss = new List<Vector2>[Chunk.maxX];
+    static int indx;
 
-    public static void UpdateMeshFast(Chunk c, int x, int y, int z, Mesh mesh, int meshIndex, Block block) //TODO optimize
+    public static void UpdateMeshFast(Chunk c, int x, int y, int z, Mesh mesh, int meshIndex, Block block)
     {
         if (updateMeshAfterWait != null) Game.game.StopCoroutine(updateMeshAfterWait);
 
-        vertss[x] = new List<Vector3>(mesh.vertices);
-        triss[x] = new List<int>(mesh.triangles);
-        uvss[x] = new List<Vector2>(mesh.uv);
+        if (vertss[x] == null)
+        {
+            vertss[x] = new List<Vector3>();
+            triss[x] = new List<int>();
+            uvss[x] = new List<Vector2>();
+        }
+
+        mesh.GetVertices(vertss[x]);
+        mesh.GetTriangles(triss[x], 0);
+        mesh.GetUVs(0, uvss[x]);
 
         if (block.Info is BlockInfoMesh) AddMesh(x, y, z, block, c, new Vector3(x + .5f, y, z + .5f));
         else AddCube(x, y, z, block.Info.IsTransparent, block.Info.uvs, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null || c.GetBlock(_x, _y, _z).Info.IsTransparent);
@@ -31,19 +39,7 @@ static class MeshCreator
         tris = triss[x];
         uv = uvss[x];
 
-        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshInd, false), meshIndex);
-
-        vertss[x] = new List<Vector3>(mesh.vertices);
-        triss[x] = new List<int>(mesh.triangles);
-        uvss[x] = new List<Vector2>();
-
-        AddCube(x, y, z, false, null, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null);
-
-        verts = vertss[x];
-        tris = triss[x];
-        uv = uvss[x];
-
-        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), null, meshInd, true), meshIndex);
+        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshInd), meshIndex);
 
         updateMeshAfterWait = Game.game.StartCoroutine(UpdateMeshAfterWait(c));
     }
@@ -54,18 +50,23 @@ static class MeshCreator
     }
     public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, bool isMainThread = true)
     {
-        vertss = new List<Vector3>[Chunk.maxX];
-        triss = new List<int>[Chunk.maxX];
-        uvss = new List<Vector2>[Chunk.maxX];
-
         Parallel.For(0, Chunk.maxX, (int x, ParallelLoopState _) =>
         {
             Vector3 coords = new Vector3();
             Block tb;
 
-            vertss[x] = new List<Vector3>();
-            triss[x] = new List<int>();
-            uvss[x] = new List<Vector2>();
+            if (vertss[x] == null)
+            {
+                vertss[x] = new List<Vector3>();
+                triss[x] = new List<int>();
+                uvss[x] = new List<Vector2>();
+            }
+            else
+            {
+                vertss[x].Clear();
+                triss[x].Clear();
+                uvss[x].Clear();
+            }
 
             for (int y = 0; y < Blocks.Count; y++)
             {
@@ -83,26 +84,7 @@ static class MeshCreator
         });
 
         CombineArrays();
-        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshInd, false, isMainThread));
-
-        // Mesh Collider
-
-        Parallel.For(0, Chunk.maxX, (int x, ParallelLoopState _) =>
-        {
-            vertss[x] = new List<Vector3>();
-            triss[x] = new List<int>();
-            uvss[x] = new List<Vector2>();
-
-            for (int y = 0; y < Blocks.Count; y++)
-                for (int z = 0; z < Chunk.maxZ; z++)
-                    if (Blocks[y][x, z] != null)
-                        AddCube(x, y, z, false, null, c, (int _x, int _y, int _z) => c.GetBlock(_x, _y, _z) == null);
-        });
-
-        CombineArrays();
-        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), null, meshInd, true, isMainThread));
-
-        /// Mesh Collider
+        DivideMeshesAndSet((sve, eve, str, etr, meshInd) => c.SetMesh(verts.GetRange(sve, eve).ToArray(), tris.GetRange(str, etr).ToArray(), uv.GetRange(sve, eve).ToArray(), meshInd, isMainThread));
     }
     static void DivideMeshesAndSet(Action<int, int, int, int, int> setm, int meshIndex = 0)
     {
@@ -203,29 +185,32 @@ static class MeshCreator
     {
         if (isTransparent)
         {
-            AddCubeMesh(Sides.Left, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
-            AddCubeMesh(Sides.Right, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            AddCubeMesh(Sides.Left, x, y, z, uvs);
+            AddCubeMesh(Sides.Right, x, y, z, uvs);
 
-            AddCubeMesh(Sides.Top, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
-            AddCubeMesh(Sides.Bottom, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            AddCubeMesh(Sides.Top, x, y, z, uvs);
+            AddCubeMesh(Sides.Bottom, x, y, z, uvs);
 
-            AddCubeMesh(Sides.Front, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
-            AddCubeMesh(Sides.Back, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            AddCubeMesh(Sides.Front, x, y, z, uvs);
+            AddCubeMesh(Sides.Back, x, y, z, uvs);
         }
         else
         {
-            if (isBlockFunc(x, y, z + 1)) AddCubeMesh(Sides.Front, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
-            if (isBlockFunc(x, y, z - 1)) AddCubeMesh(Sides.Back, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            if (isBlockFunc(x, y, z + 1)) AddCubeMesh(Sides.Front, x, y, z, uvs);
+            if (isBlockFunc(x, y, z - 1)) AddCubeMesh(Sides.Back, x, y, z, uvs);
 
-            if (isBlockFunc(x, y + 1, z)) AddCubeMesh(Sides.Top, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
-            if (isBlockFunc(x, y - 1, z)) AddCubeMesh(Sides.Bottom, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            if (isBlockFunc(x, y + 1, z)) AddCubeMesh(Sides.Top, x, y, z, uvs);
+            if (isBlockFunc(x, y - 1, z)) AddCubeMesh(Sides.Bottom, x, y, z, uvs);
 
-            if (isBlockFunc(x + 1, y, z)) AddCubeMesh(Sides.Right, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
-            if (isBlockFunc(x - 1, y, z)) AddCubeMesh(Sides.Left, x, y, z, uvs, vertss[x], triss[x], uvss[x]);
+            if (isBlockFunc(x + 1, y, z)) AddCubeMesh(Sides.Right, x, y, z, uvs);
+            if (isBlockFunc(x - 1, y, z)) AddCubeMesh(Sides.Left, x, y, z, uvs);
         }
     }
-    static void AddCubeMesh(Sides side, int x, int y, int z, Vector2[] uvs, List<Vector3> verts, List<int> tris, List<Vector2> uv)
+    static void AddCubeMesh(Sides side, int x, int y, int z, Vector2[] uvs)
     {
+        List<Vector3> verts = vertss[x];
+        List<int> tris = triss[x];
+
         int index = verts.Count;
         var adds = Chunk.CubeMeshes[side];
 
@@ -243,6 +228,7 @@ static class MeshCreator
 
         if (uvs != null)
         {
+            List<Vector2> uv = uvss[x];
             uv.Add(uvs[(int) side * 4 + 0]);
             uv.Add(uvs[(int) side * 4 + 1]);
             uv.Add(uvs[(int) side * 4 + 2]);

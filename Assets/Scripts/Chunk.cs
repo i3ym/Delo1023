@@ -116,12 +116,13 @@ public class Chunk
         if (b.OnPlace(x + X * maxX, y, z + Z * maxZ, b.Rotation))
         {
             Blocks[y][x, z] = b;
+            world.UpdateChunk(this);
 
-            if (update)
+            /*if (update)
             {
-                if (updateFast) MeshCreator.UpdateMeshFast(this, x, y, z, meshes[meshes.Count - 1], meshes.Count - 1, b);
+                if (updateFast) MeshCreator.UpdateMeshFast(this, x, y, z, meshes[meshes.Count - 1], meshesCollider[meshesCollider.Count - 1], meshes.Count - 1, b);
                 else MeshCreator.UpdateMesh(this, Blocks);
-            }
+            }*/
             return true;
         }
 
@@ -143,69 +144,50 @@ public class Chunk
 
         return Blocks[y][x, z];
     }
-    public void SetMesh(Vector3[] verts, int[] tris, Vector2[] uv, int index, bool isCollider, bool isMainThread = true)
+    public void SetMesh(Vector3[] verts, int[] tris, Vector2[] uv, int index, bool isMainThread = true)
     {
         if (!isMainThread)
         {
-            world.Invoke(() => SetMesh(verts, tris, uv, index, isCollider));
+            world.Invoke(() => SetMesh(verts, tris, uv, index));
             return;
         }
 
-        Mesh mesh;
+        Mesh mesh = new Mesh();
         GameObject go;
 
         if (meshes.Count <= index)
         {
             mesh = new Mesh();
-            go = new GameObject();
+            meshes.Add(mesh);
+        }
+        else mesh = meshes[index];
 
-            if (isCollider) go.AddComponent<MeshCollider>().sharedMesh = mesh;
-            else
-            {
-                go.AddComponent<MeshFilter>().mesh = mesh;
-                go.AddComponent<MeshRenderer>().material = Game.material;
-                go.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.TwoSided;
-            }
+        if (meshHolders.Count <= index)
+        {
+            go = new GameObject();
+            go.AddComponent<MeshFilter>().mesh = mesh;
+            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            mr.material = Game.material;
+            mr.shadowCastingMode = ShadowCastingMode.TwoSided;
 
             go.transform.SetParent(parent.transform);
             go.transform.position = parent.transform.position;
             go.layer = 10;
 
-            meshes.Add(mesh);
             meshHolders.Add(go);
         }
-        else
-        {
-            if (!isCollider) mesh = meshes[index];
-            else mesh = new Mesh();
-
-            go = meshHolders[index];
-        }
+        else go = meshHolders[index];
 
         mesh.Clear();
         mesh.vertices = verts;
         mesh.triangles = tris;
 
-        if (!isCollider)
-        {
-            mesh.uv = uv;
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-        }
+        mesh.uv = uv;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
         mesh.Optimize();
 
-        if (isCollider)
-        {
-            MeshCollider mc = go.GetComponent<MeshCollider>();
-            if (mc == null) mc = go.AddComponent<MeshCollider>();
-
-            mc.sharedMesh = mesh;
-        }
-        else
-        {
-            go.GetComponent<MeshFilter>().mesh = mesh;
-            go.GetComponent<MeshRenderer>().material = Game.material;
-        }
+        go.GetComponent<MeshFilter>().mesh = mesh;
     }
 }
 public enum Sides

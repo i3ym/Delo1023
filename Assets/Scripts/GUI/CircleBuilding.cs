@@ -6,7 +6,7 @@ public class CircleBuilding : Circle
 {
     override protected void AddItems()
     {
-        items.Add(new CircleItem(sprites[0], () => Game.world.StartBuilding<BuildingHouse>()));
+        items.Add(new CircleItem(sprites[0], () => World.StartBuilding<BuildingHouse>()));
         items.Add(new CircleItem(sprites[1], () =>
         {
             Debug.Log("building");
