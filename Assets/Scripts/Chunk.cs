@@ -15,8 +15,8 @@ public class Chunk
     public int Price = 0;
     public Building building = null;
     public int sizeY = 0;
-    World world;
     public GameObject parent;
+    World world;
     List<Mesh> meshes = new List<Mesh>();
     List<GameObject> meshHolders = new List<GameObject>();
 

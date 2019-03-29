@@ -37,6 +37,8 @@ public class CameraRenderer : MonoBehaviour
             if (b != Block.Transparent)
                 AddRender(b, b.textures);
 
+        RenderTexture.ReleaseTemporary(RenderTexture.active);
+
         Destroy(meshgo);
         Destroy(gameObject);
     }

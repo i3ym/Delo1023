@@ -6,11 +6,13 @@ using System.Linq;
 using TMPro;
 using Unity.VectorGraphics;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 
 public class Game : MonoBehaviour
 {
     public static new Camera camera;
+    public static Transform cameratr;
     public static Dictionary<string, Rect> TextureRects = new Dictionary<string, Rect>();
     public static Dictionary<string, Vector2[]> TextureMeshUvs = new Dictionary<string, Vector2[]>();
     public static Dictionary<string, Mesh> Meshes = new Dictionary<string, Mesh>();
@@ -65,6 +67,7 @@ public class Game : MonoBehaviour
         }
         game = this;
         camera = Camera.main;
+        cameratr = camera.transform;
         material = mat;
         Money = 100000;
         VillagersMax = 0;
@@ -83,8 +86,8 @@ public class Game : MonoBehaviour
 
     public static void SvgImageToRaw(SVGImage img)
     {
+        return;
         GameObject obj = img.gameObject;
-
         Texture2D texx = VectorUtils.RenderSpriteToTexture2D(img.sprite, (int) img.rectTransform.sizeDelta.x, (int) img.rectTransform.sizeDelta.y, img.material, 8, true);
         texx.wrapMode = TextureWrapMode.Clamp;
 

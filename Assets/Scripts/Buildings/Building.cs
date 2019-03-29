@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Building
 {
     public abstract byte Weight { get; }
-    public Chunk[] Chunks;
+    public List<Chunk> Chunks = new List<Chunk>();
     int Exp = 0;
     static Block tempblock;
     static int tempExp;

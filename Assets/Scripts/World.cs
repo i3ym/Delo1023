@@ -9,8 +9,8 @@ using UnityEngine.UI;
 
 public class World : MonoBehaviour
 {
-    public static int sizeX = 1;
-    public static int sizeZ = 1;
+    public static int sizeX = 5;
+    public static int sizeZ = 5;
 
     public static Builder builder;
     static Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
@@ -33,9 +33,12 @@ public class World : MonoBehaviour
 
         builder = gameObject.GetComponent<Builder>();
         layerMask = LayerMask.GetMask("Chunk");
+        
+        for (int x = 0; x < sizeX; x++)
+            for (int z = 0; z < sizeZ; z++)
+                Chunks[x, z] = new Chunk(x, z, this);
 
         StartCoroutine(AddVillagersCoroutine());
-        StartCoroutine(CreateChunksCoroutine());
         StartCoroutine(SelectChunkCoroutine());
     }
     void Update()
@@ -65,15 +68,6 @@ public class World : MonoBehaviour
 
             if (Game.Villagers < Game.VillagersMax) Game.Villagers++;
         }
-    }
-    IEnumerator CreateChunksCoroutine()
-    {
-        for (int x = 0; x < sizeX; x++)
-            for (int z = 0; z < sizeZ; z++)
-            {
-                Chunks[x, z] = new Chunk(x, z, this);
-                yield return null;
-            }
     }
     IEnumerator SelectChunkCoroutine()
     {
@@ -127,7 +121,7 @@ public class World : MonoBehaviour
                 return;
             }
 
-            tempchunk = GetChunk(pos.Value.x, pos.Value.z);
+            tempchunk = GetChunkByBlock(pos.Value.x, pos.Value.z);
 
             if (Input.GetKey(KeyCode.LeftControl))
             {
@@ -169,7 +163,7 @@ public class World : MonoBehaviour
             ResetChunkTint(c);
         }
     }
-    public static Chunk GetChunk(int x, int z) => Chunks[x / Chunk.maxX, z / Chunk.maxZ];
+    public static Chunk GetChunkByBlock(int x, int z) => Chunks[x / Chunk.maxX, z / Chunk.maxZ];
     public static void ClearChunksTint()
     {
         foreach (Chunk c in Chunks)
@@ -190,14 +184,16 @@ public class World : MonoBehaviour
     {
         if (SelectedChunks.Count == 0) return;
 
-        bool selected(int x, int z) => x < 0 || z < 0 || x > sizeX - 1 || z > sizeZ - 1 || SelectedChunks.Contains(Chunks[x, z]);
+        bool selected(int x, int z) => x > -1 && z > -1 && x < sizeX && z < sizeZ && SelectedChunks.Contains(Chunks[x, z]);
 
-        foreach (Chunk c in SelectedChunks)
+        Chunk ch;
+        for (int i = 0; i < SelectedChunks.Count - 1; i++)
         {
-            if (selected(c.X + 1, c.Z) ||
-                selected(c.X - 1, c.Z) ||
-                selected(c.X, c.Z + 1) ||
-                selected(c.X, c.Z - 1)) continue;
+            ch = SelectedChunks[i];
+            if (selected(ch.X + 1, ch.Z) ||
+                selected(ch.X - 1, ch.Z) ||
+                selected(ch.X, ch.Z + 1) ||
+                selected(ch.X, ch.Z - 1)) continue;
 
             return;
         }
@@ -214,7 +210,7 @@ public class World : MonoBehaviour
         builder.OldCameraPosition = Game.camera.transform.position;
         builder.OldCameraRotation = Game.camera.transform.rotation;
 
-        Chunk ch = SelectedChunks[0];
+        ch = SelectedChunks[0];
         Game.camera.transform.position = new Vector3(ch.Blocks[0].GetLength(0), ch.Blocks.Count + 5, ch.Blocks[0].GetLength(1));
 
         foreach (Chunk c in Chunks) SetChunkTint(c, Color.gray);
@@ -223,7 +219,8 @@ public class World : MonoBehaviour
             SetChunkTint(c, Color.white);
             c.building = building;
         }
-        building.Chunks = SelectedChunks.ToArray();
+        building.Chunks.Clear();
+        building.Chunks.AddRange(SelectedChunks);
         SelectedChunks.Clear();
 
         Game.Building = true;

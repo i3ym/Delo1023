@@ -25,7 +25,6 @@ public class Builder : MonoBehaviour
     public Quaternion OldCameraRotation;
     public Building building;
     Move move;
-    new Transform camera;
     int layerMask;
     int selectedBlock = 0;
 
@@ -34,7 +33,6 @@ public class Builder : MonoBehaviour
     void Start()
     {
         layerMask = LayerMask.GetMask("ChunkBuilding");
-        camera = Game.camera.transform;
         move = GetComponent<Move>();
 
         ButtonContinue.onClick.AddListener(new UnityAction(() =>
@@ -48,8 +46,8 @@ public class Builder : MonoBehaviour
 
             building.Recalculate();
 
-            camera.position = OldCameraPosition;
-            camera.rotation = OldCameraRotation;
+            Game.cameratr.position = OldCameraPosition;
+            Game.cameratr.rotation = OldCameraRotation;
             move.enabled = true;
             Game.Building = false;
             enabled = false;
@@ -72,21 +70,17 @@ public class Builder : MonoBehaviour
 
     void SetOutline()
     {
-        Vector3Int? pos = BlockRaycast.RaycastBlockPosition(camera.position, camera.forward, .1f, 1000);
-        if (pos.HasValue)
+        Vector3Int? pos = BlockRaycast.RaycastBlockPosition(Game.cameratr.position, Game.cameratr.forward, .1f, 1000);
+        if (pos.HasValue && building.Chunks.Contains(World.GetChunkByBlock(pos.Value.x, pos.Value.z)))
         {
             const float size = 1.05f;
-            const float minadd = (size - 1f) / 2f;
-            Color clr = new Color(.1f, .1f, .1f);
-            Vector3 blockPos = pos.Value - Vector3.one * minadd;
-            //    Vector3 blockPos = new Vector3((int) (hit.point.x - hit.normal.x * .01f) - minadd, (int) (hit.point.y - hit.normal.y * .01f) - minadd, (int) (hit.point.z - hit.normal.z * .01f) - minadd);
-            Vector3 temp;
+            Vector3 blockPos = pos.Value - Vector3.one * (size - 1f) / 2f;
 
             GL.PushMatrix();
             GL.Begin(GL.LINES);
-            GL.Color(clr);
+            GL.Color(new Color(.1f, .1f, .1f));
 
-            temp = new Vector3();
+            Vector3 temp = new Vector3();
             GL.Vertex(blockPos + temp);
             temp.y = size;
             GL.Vertex(blockPos + temp);
@@ -155,24 +149,14 @@ public class Builder : MonoBehaviour
     }
     void PlaceBlock()
     {
-        Vector3Int? pos = BlockRaycast.RaycastBlockForPlace(camera.position, camera.forward, .1f, 1000);
-        if (move.enabled && pos.HasValue)
-        {
-            foreach (Chunk c in building.Chunks)
-                if (c == World.GetChunk(pos.Value.x, pos.Value.z))
-                {
-                    if (Game.Money - Block.Blocks[selectedBlock].Price >= 0)
-                    {
-                        if (World.SetBlock(pos.Value, Block.Blocks[selectedBlock].Instance()))
-                            Game.Money -= Block.Blocks[selectedBlock].Price;
-                    }
-                    return;
-                }
-        }
+        Vector3Int? pos = BlockRaycast.RaycastBlockForPlace(Game.cameratr.position, Game.cameratr.forward, .05f, 2000);
+        if (move.enabled && pos.HasValue && building.Chunks.Contains(World.GetChunkByBlock(pos.Value.x, pos.Value.z)) && Game.Money - Block.Blocks[selectedBlock].Price >= 0)
+            if (World.SetBlock(pos.Value, Block.Blocks[selectedBlock].Instance()))
+                Game.Money -= Block.Blocks[selectedBlock].Price;
     }
     void RemoveBlock()
     {
-        Vector3Int? pos = BlockRaycast.RaycastBlockPosition(camera.position, camera.forward, .1f, 1000);
+        Vector3Int? pos = BlockRaycast.RaycastBlockPosition(Game.cameratr.position, Game.cameratr.forward, .1f, 1000);
         if (move.enabled && pos.HasValue)
         {
             MultiblockPartComponent mpc = World.GetBlock(pos.Value + (Vector3) pos.Value * float.Epsilon).GetComponent<MultiblockPartComponent>();

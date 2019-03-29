@@ -25,7 +25,7 @@ public class MultiblockComponent : BComponent
             if (pos.x + x < 0 || pos.x + x > World.sizeX * Chunk.maxX - 1 || pos.z + z < 0 || pos.z + z > World.sizeZ * Chunk.maxZ - 1 || World.GetBlock(x + pos.x, y + pos.y, z + pos.z) != null) return false;
 
             canPlaceThis = false;
-            chunk = World.GetChunk(x + pos.x, z + pos.z);
+            chunk = World.GetChunkByBlock(x + pos.x, z + pos.z);
 
             foreach (Chunk c in World.builder.building.Chunks)
                 if (c == chunk)

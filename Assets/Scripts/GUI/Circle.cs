@@ -18,7 +18,7 @@ public abstract class Circle : MonoBehaviour
     [SerializeField]
     protected Sprite[] sprites = null;
     [SerializeField]
-    protected Material materialSvg = null;
+    protected Material materialSvg = null, materialCircle = null;
     [SerializeField]
     protected float thickness, distance;
     [SerializeField]
@@ -62,7 +62,7 @@ public abstract class Circle : MonoBehaviour
 
         gameObject.AddComponent<MeshFilter>().mesh = mesh;
         renderer = gameObject.AddComponent<MeshRenderer>();
-        renderer.material = new Material(Shader.Find("Unlit/Color"));
+        renderer.material = materialCircle;
         gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
     }
     void Update()

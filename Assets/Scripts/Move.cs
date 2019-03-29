@@ -60,7 +60,7 @@ public class Move : MonoBehaviour
             if (Input.GetAxis(Vertical) != 0f)
                 tempForward.Set(transform.forward.x, 0, transform.forward.z);
 
-            transform.position += (tempForward * Input.GetAxis(Vertical) + transform.right * Input.GetAxis(Horizontal) + transform.up * Input.GetAxis(Diagonal)) / 2f;
+            transform.position += (tempForward * Input.GetAxis(Vertical) + transform.right * Input.GetAxis(Horizontal) + up * Input.GetAxis(Diagonal)) / 2f;
         }
     }
 
