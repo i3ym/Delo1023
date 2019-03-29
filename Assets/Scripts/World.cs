@@ -9,8 +9,8 @@ using UnityEngine.UI;
 
 public class World : MonoBehaviour
 {
-    public static int sizeX = 5;
-    public static int sizeZ = 5;
+    public static int sizeX = 10;
+    public static int sizeZ = 10;
 
     public static Builder builder;
     static Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
@@ -141,12 +141,12 @@ public class World : MonoBehaviour
             foreach (Chunk cc in c.building.Chunks)
             {
                 SelectedChunks.Add(cc);
-                SetChunkTint(cc, Color.green);
+                SetChunkMaterial(cc, Game.materialSelected);
             }
         else
         {
             SelectedChunks.Add(c);
-            SetChunkTint(c, Color.green);
+            SetChunkMaterial(c, Game.materialSelected);
         }
     }
     void UnselectChunk(Chunk c)
@@ -155,12 +155,12 @@ public class World : MonoBehaviour
             foreach (Chunk cc in c.building.Chunks)
             {
                 SelectedChunks.Remove(cc);
-                ResetChunkTint(cc);
+                SetChunkMaterial(cc, Game.material);
             }
         else
         {
             SelectedChunks.Remove(c);
-            ResetChunkTint(c);
+            SetChunkMaterial(c, Game.material);
         }
     }
     public static Chunk GetChunkByBlock(int x, int z) => Chunks[x / Chunk.maxX, z / Chunk.maxZ];
@@ -170,15 +170,10 @@ public class World : MonoBehaviour
             foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
                 r.sharedMaterial = Game.material;
     }
-    static void ResetChunkTint(Chunk c)
+    static void SetChunkMaterial(Chunk c, Material mat)
     {
         foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
-            r.sharedMaterial = Game.material;
-    }
-    static void SetChunkTint(Chunk c, Color clr)
-    {
-        foreach (Renderer r in c.parent.GetComponentsInChildren<Renderer>())
-            r.material.color = clr;
+            r.sharedMaterial = mat;
     }
     public static void StartBuilding<T>() where T : Building, new()
     {
@@ -207,16 +202,11 @@ public class World : MonoBehaviour
         }
 
         builder.building = building;
-        builder.OldCameraPosition = Game.camera.transform.position;
-        builder.OldCameraRotation = Game.camera.transform.rotation;
 
-        ch = SelectedChunks[0];
-        Game.camera.transform.position = new Vector3(ch.Blocks[0].GetLength(0), ch.Blocks.Count + 5, ch.Blocks[0].GetLength(1));
-
-        foreach (Chunk c in Chunks) SetChunkTint(c, Color.gray);
+        foreach (Chunk c in Chunks) SetChunkMaterial(c, Game.materialUnselected);
         foreach (Chunk c in SelectedChunks)
         {
-            SetChunkTint(c, Color.white);
+            SetChunkMaterial(c, Game.material);
             c.building = building;
         }
         building.Chunks.Clear();

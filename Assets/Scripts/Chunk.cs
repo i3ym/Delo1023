@@ -55,8 +55,8 @@ public class Chunk
     {
         const float seed = .5f;
 
-        for (int xx = 0; xx < maxX; xx++)
-        //Parallel.For(0, maxX, (int xx, ParallelLoopState _) =>
+        // for (int xx = 0; xx < maxX; xx++)
+        Parallel.For(0, maxX, (int xx, ParallelLoopState _) =>
         {
             int perlin;
             for (int zz = 0; zz < maxZ; zz++)
@@ -70,7 +70,7 @@ public class Chunk
 
                 SetBlock(xx, perlin, zz, Block.Grass.Instance(), update : false, rotation : 0);
             }
-        } //);
+        });
     }
     public int CalculatePrice()
     {
@@ -88,8 +88,11 @@ public class Chunk
     {
         while (y >= sizeY)
         {
-            Blocks.Add(new Block[maxX, maxZ]);
-            sizeY++;
+            lock(Blocks)
+            {
+                Blocks.Add(new Block[maxX, maxZ]);
+                sizeY++;
+            }
         }
 
         if (Blocks[y][x, z] != null) return false;

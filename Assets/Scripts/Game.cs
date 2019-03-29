@@ -19,7 +19,7 @@ public class Game : MonoBehaviour
     public static Dictionary<string, Texture2D> BlockRenders = new Dictionary<string, Texture2D>(); //TODO всё это запихнуть в один класс ?
     public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
     public static Texture2D Atlas;
-    public static Material material;
+    public static Material material, materialSelected, materialUnselected;
     public static bool Building = false;
     public static World world;
     public static List<Building> Buildings = new List<Building>();
@@ -69,11 +69,19 @@ public class Game : MonoBehaviour
         camera = Camera.main;
         cameratr = camera.transform;
         material = mat;
+        materialSelected = new Material(material);
+        materialSelected.color = Color.green;
+        materialUnselected = new Material(material);
+        materialUnselected.color = Color.gray;
         Money = 100000;
         VillagersMax = 0;
         Exp = 0;
 
         CreateAtlas();
+
+        material.mainTexture = Atlas;
+        materialSelected.mainTexture = Atlas;
+        materialUnselected.mainTexture = Atlas;
 
         foreach (Texture2D tex in Resources.LoadAll<Texture2D>("Textures")) textures.Add(tex.name, tex);
         foreach (Texture2D tex in Resources.LoadAll<Texture2D>("TexturesMesh")) textures.Add(tex.name, tex);
@@ -128,8 +136,6 @@ public class Game : MonoBehaviour
             Meshes.Add(texturesMeshes[i].name, meshes[i]);
             meshes[i].name = texturesMeshes[i].name;
         }
-
-        material.mainTexture = Atlas;
     }
 
     static int ExpForLvl(int lvl) => (int) (Math.Sqrt(lvl) * lvl * 1000.0);

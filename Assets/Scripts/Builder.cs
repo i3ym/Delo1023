@@ -19,10 +19,6 @@ public class Builder : MonoBehaviour
     [SerializeField]
     BlockChooser blockChooser = null;
 
-    [HideInInspector]
-    public Vector3 OldCameraPosition;
-    [HideInInspector]
-    public Quaternion OldCameraRotation;
     public Building building;
     Move move;
     int layerMask;
@@ -46,8 +42,6 @@ public class Builder : MonoBehaviour
 
             building.Recalculate();
 
-            Game.cameratr.position = OldCameraPosition;
-            Game.cameratr.rotation = OldCameraRotation;
             move.enabled = true;
             Game.Building = false;
             enabled = false;

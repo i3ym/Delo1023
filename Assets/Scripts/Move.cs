@@ -6,7 +6,7 @@ public class Move : MonoBehaviour
 {
     public const string Horizontal = "Horizontal";
     public const string Vertical = "Vertical";
-    public const string Diagonal = "Diagonal"; //e q
+    public const string Diagonal = "Diagonal";
     public const string MouseX = "Mouse X";
     public const string MouseY = "Mouse Y";
 
@@ -14,8 +14,6 @@ public class Move : MonoBehaviour
     static Vector3 up = Vector3.up;
     float speed = 1f;
     float rotX = 0;
-
-    Vector3 tempForward;
 
     void Start()
     {
@@ -38,30 +36,25 @@ public class Move : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (Game.Building)
-        {
-            const float hitbox = .4f;
-            Vector3 add = (transform.forward * (Input.GetAxis(Vertical) * speed) + transform.right * (Input.GetAxis(Horizontal) * speed) + transform.up * (Input.GetAxis(Diagonal) * speed)) / 2f;
-            float x = transform.position.x;
-            float y = transform.position.y;
-            float z = transform.position.z;
+        const float hitbox = .4f;
+        Vector3 add;
 
-            if (World.GetBlock(x + hitbox, y, z) != null && add.x > 0f) add.x = 0f;
-            else if (World.GetBlock(x - hitbox, y, z) != null && add.x < 0f) add.x = 0f;
-            if (World.GetBlock(x, y + hitbox, z) != null && add.y > 0f) add.y = 0f;
-            else if (World.GetBlock(x, y - hitbox, z) != null && add.y < 0f) add.y = 0f;
-            if (World.GetBlock(x, y, z + hitbox) != null && add.z > 0f) add.z = 0f;
-            else if (World.GetBlock(x, y, z - hitbox) != null && add.z < 0f) add.z = 0f;
+        if (Game.Building) add = (transform.forward * (Input.GetAxis(Vertical) * speed) + transform.right * (Input.GetAxis(Horizontal) * speed) + transform.up * (Input.GetAxis(Diagonal) * speed)) / 2f;
+        else add = (new Vector3(Mathf.Sin(transform.eulerAngles.y * Mathf.Deg2Rad), 0, Mathf.Cos(transform.eulerAngles.y * Mathf.Deg2Rad)) * Input.GetAxis(Vertical) +
+            transform.right * Input.GetAxis(Horizontal) + up * Input.GetAxis(Diagonal)) / 2f;
 
-            transform.position += add;
-        }
-        else
-        {
-            if (Input.GetAxis(Vertical) != 0f)
-                tempForward.Set(transform.forward.x, 0, transform.forward.z);
+        float x = transform.position.x;
+        float y = transform.position.y;
+        float z = transform.position.z;
 
-            transform.position += (tempForward * Input.GetAxis(Vertical) + transform.right * Input.GetAxis(Horizontal) + up * Input.GetAxis(Diagonal)) / 2f;
-        }
+        if (World.GetBlock(x + hitbox, y, z) != null && add.x > 0f) add.x = 0f;
+        else if (World.GetBlock(x - hitbox, y, z) != null && add.x < 0f) add.x = 0f;
+        if (World.GetBlock(x, y + hitbox, z) != null && add.y > 0f) add.y = 0f;
+        else if (World.GetBlock(x, y - hitbox, z) != null && add.y < 0f) add.y = 0f;
+        if (World.GetBlock(x, y, z + hitbox) != null && add.z > 0f) add.z = 0f;
+        else if (World.GetBlock(x, y, z - hitbox) != null && add.z < 0f) add.z = 0f;
+
+        transform.position += add;
     }
 
     IEnumerator MouseMoveInWorld()
