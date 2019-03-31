@@ -14,7 +14,7 @@ public class World : MonoBehaviour
 
     public static Builder builder;
     static Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
-    static List<Chunk> SelectedChunks = new List<Chunk>();
+    public static List<Chunk> SelectedChunks = new List<Chunk>();
     static RaycastHit hit;
     static int layerMask;
     new static Transform camera;
@@ -33,7 +33,7 @@ public class World : MonoBehaviour
 
         builder = gameObject.GetComponent<Builder>();
         layerMask = LayerMask.GetMask("Chunk");
-        
+
         for (int x = 0; x < sizeX; x++)
             for (int z = 0; z < sizeZ; z++)
                 Chunks[x, z] = new Chunk(x, z, this);
@@ -53,7 +53,7 @@ public class World : MonoBehaviour
         {
             UpdateChunks = false;
             foreach (Chunk c in ToUpdate)
-                MeshCreator.UpdateMesh(c, c.Blocks);
+                if (c != null) MeshCreator.UpdateMesh(c, c.Blocks);
             ToUpdate.Clear();
         }
 

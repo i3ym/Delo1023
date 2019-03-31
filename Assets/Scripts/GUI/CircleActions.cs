@@ -14,9 +14,6 @@ public class CircleActions : Circle
         {
             Debug.Log("paste");
         }));
-        items.Add(new CircleItem(sprites[2], () =>
-        {
-            Debug.Log("regen");
-        }));
+        items.Add(new CircleItem(sprites[2], () => MessageBox.Show("Перегенерировать чанк?", () => World.SelectedChunks.ForEach(x => x.Generate()), () => { })));
     }
 }

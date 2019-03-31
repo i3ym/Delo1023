@@ -11,9 +11,10 @@ public abstract class Circle : MonoBehaviour
     protected static int count = 0;
     protected List<CircleItem> items = new List<CircleItem>();
     protected new MeshRenderer renderer;
-    protected Mesh mesh;
     protected new RectTransform transform;
     protected Vector3 mouseStartPos;
+    protected Mesh mesh;
+    protected sbyte Selected;
 
     [SerializeField]
     protected Sprite[] sprites = null;
@@ -59,10 +60,12 @@ public abstract class Circle : MonoBehaviour
         }
 
         mesh = new Mesh();
+        CreateMesh();
 
         gameObject.AddComponent<MeshFilter>().mesh = mesh;
         renderer = gameObject.AddComponent<MeshRenderer>();
         renderer.material = materialCircle;
+        renderer.enabled = false;
         gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
     }
     void Update()
@@ -86,38 +89,75 @@ public abstract class Circle : MonoBehaviour
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, Input.mousePosition, canvas.worldCamera, out Vector2 mousePos);
             mousePos -= (Vector2) mouseStartPos;
+
             if (mousePos.magnitude < inBound || mousePos.magnitude > outBound)
             {
-                CreateMesh();
-                for (int i = 0; i < items.Count; i++)
-                    items[i].transform.anchoredPosition = GetIconPosition(i);
-
+                SetSelected(-1);
                 return;
             }
 
-            int selected = Mod(Mathf.FloorToInt(Mathf.Atan2(mousePos.y, mousePos.x) / Mathf.PI / 2f * count), count);
-
-            CreateMesh(selected);
-
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (i == selected) items[i].transform.anchoredPosition = GetIconPosition(i) * selectedMultiplier;
-                else items[i].transform.anchoredPosition = GetIconPosition(i);
-            }
+            sbyte selected = (sbyte) Mod(Mathf.FloorToInt(Mathf.Atan2(mousePos.y, mousePos.x) / Mathf.PI / 2f * count), count);
+            SetSelected(selected);
 
             if (Input.GetMouseButtonDown(0) && selected < items.Count) items[selected].action();
         }
     }
 
     protected abstract void AddItems();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    Vector2 GetPositionSelectedOut(float angle)
+    {
+        Vector2 pos = GetPosition(angle);
+        return pos + pos.normalized * thickness * selectedMultiplier;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    Vector2 GetPositionOut(float angle)
+    {
+        Vector2 pos = GetPosition(angle);
+        return pos + pos.normalized * thickness;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    Vector2 GetPositionSelected(float angle) => new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)).normalized * distance * selectedMultiplier;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     Vector2 GetPosition(float angle) => new Vector2(Mathf.Cos(angle) * distance, Mathf.Sin(angle) * distance);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static int Mod(int x, int m) => (x % m + m) % m;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static float GetAngle(int i) => 2f * Mathf.PI / count * i; // Mod(i, count);
+    static float GetAngle(int i) => 2f * Mathf.PI / count * (i % count);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     Vector2 GetIconPosition(int i) => (GetPosition(GetAngle(i)) + GetPosition(GetAngle(i + 1))).normalized * (distance + thickness / 4f);
+    void SetSelected(sbyte selected = -1)
+    {
+        if (selected == Selected) return;
+        if (selected > items.Count - 1) selected = -1;
+
+        Vector3[] verts = mesh.vertices;
+
+        if (Selected != -1)
+        {
+            items[Selected].transform.anchoredPosition = GetIconPosition(Selected);
+            verts[Selected * 4 + 3] = GetPosition(GetAngle(Selected));
+            verts[Selected * 4 + 2] = GetPositionOut(GetAngle(Selected));
+            verts[Selected * 4 + 1] = GetPositionOut(GetAngle(Selected + 1));
+            verts[Selected * 4] = GetPosition(GetAngle(Selected + 1));
+        }
+
+        if (selected != -1)
+        {
+            items[selected].transform.anchoredPosition = GetIconPosition(selected) * selectedMultiplier;
+            verts[selected * 4 + 3] = GetPositionSelected(GetAngle(selected));
+            verts[selected * 4 + 2] = GetPositionSelectedOut(GetAngle(selected));
+            verts[selected * 4 + 1] = GetPositionSelectedOut(GetAngle(selected + 1));
+            verts[selected * 4] = GetPositionSelected(GetAngle(selected + 1));
+        }
+
+        mesh.vertices = verts;
+
+        Selected = selected;
+    }
     void CreateMesh(int selected = -1)
     {
         List<Vector3> verts = new List<Vector3>();

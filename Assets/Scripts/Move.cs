@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Move : MonoBehaviour
 {
+    //public static bool Enabled = true;
     public const string Horizontal = "Horizontal";
     public const string Vertical = "Vertical";
     public const string Diagonal = "Diagonal";

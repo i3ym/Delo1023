@@ -51,11 +51,12 @@ public class Chunk
         MeshCreator.UpdateMesh(this, Blocks);
     }
 
-    void Generate()
+    public void Generate()
     {
         const float seed = .5f;
+        Blocks.Clear();
+        sizeY = 0;
 
-        // for (int xx = 0; xx < maxX; xx++)
         Parallel.For(0, maxX, (int xx, ParallelLoopState _) =>
         {
             int perlin;
