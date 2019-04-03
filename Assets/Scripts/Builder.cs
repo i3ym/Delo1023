@@ -21,14 +21,12 @@ public class Builder : MonoBehaviour
 
     public Building building;
     Move move;
-    int layerMask;
     int selectedBlock = 0;
 
     float tempScroll;
 
     void Start()
     {
-        layerMask = LayerMask.GetMask("ChunkBuilding");
         move = GetComponent<Move>();
 
         ButtonContinue.onClick.AddListener(new UnityAction(() =>
@@ -151,23 +149,12 @@ public class Builder : MonoBehaviour
     void RemoveBlock()
     {
         Vector3Int? pos = BlockRaycast.RaycastBlockPosition(Game.cameratr.position, Game.cameratr.forward, .1f, 1000);
-        if (move.enabled && pos.HasValue)
-        {
-            MultiblockPartComponent mpc = World.GetBlock(pos.Value + (Vector3) pos.Value * float.Epsilon).GetComponent<MultiblockPartComponent>();
-            if (mpc != null) Game.Money += mpc.parentBlock.Price;
-            else Game.Money += Block.Blocks[selectedBlock].Price;
-            World.RemoveBlock(pos.Value);
-        }
+        if (move.enabled && pos.HasValue) World.RemoveBlock(pos.Value);
     }
 
     void OnEnable()
     {
         Cursor.lockState = CursorLockMode.Locked;
-
-        if (building != null)
-            foreach (Chunk ch in building.Chunks)
-                foreach (Transform tr in ch.parent.transform)
-                    tr.gameObject.layer = 11;
 
         TextSelectedBlock.gameObject.SetActive(true);
         TextSelectedBlock.text = "selected: " + selectedBlock;
@@ -175,11 +162,6 @@ public class Builder : MonoBehaviour
     void OnDisable()
     {
         Cursor.lockState = CursorLockMode.None;
-
-        foreach (Chunk ch in building.Chunks)
-            if (ch.parent)
-                foreach (Transform tr in ch.parent.transform)
-                    if (tr) tr.gameObject.layer = 10;
 
         if (TextSelectedBlock) TextSelectedBlock.gameObject.SetActive(false);
         if (QuitMenu) QuitMenu.SetActive(false);

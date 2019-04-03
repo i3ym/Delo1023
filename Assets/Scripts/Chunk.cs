@@ -13,10 +13,8 @@ public class Chunk
     public const int maxZ = 20;
     public int X, Z;
     public BlockList Blocks = new BlockList();
-    public int Price = 0;
     public Building building = null;
     public GameObject parent;
-    World world;
     List<Mesh> meshes = new List<Mesh>();
     List<GameObject> meshHolders = new List<GameObject>();
 
@@ -38,11 +36,10 @@ public class Chunk
         CubeMeshes.Add(Sides.Front, (new sbyte[] { 1, 1, 0, 0 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 1, 1, 1, 1 }));
         CubeMeshes.Add(Sides.Back, (new sbyte[] { 0, 0, 1, 1 }, new sbyte[] { 0, 1, 1, 0 }, new sbyte[] { 0, 0, 0, 0 }));
     }
-    public Chunk(int x, int z, World w)
+    public Chunk(int x, int z)
     {
         X = x;
         Z = z;
-        world = w;
 
         parent = new GameObject(x + ", " + z);
         parent.transform.position = new Vector3(x * maxX, 0, z * maxX);
@@ -56,8 +53,10 @@ public class Chunk
         const float seed = .5f;
 
         Blocks.Clear();
-        Game.Money += Price;
-        Price = 0;
+        int price = 0;
+        foreach (Block b in Blocks)
+            if (b != null) price += b.Info.Price;
+        Game.Money += price;
 
         Parallel.For(0, maxX, (int xx, ParallelLoopState _) =>
         {
@@ -113,8 +112,7 @@ public class Chunk
         {
             Blocks.SetBlock(x, y, z, b);
             if (takeMoney) Game.Money -= b.Info.Price;
-            Price += b.Info.Price;
-            world.UpdateChunk(this);
+            World.UpdateChunk(this);
 
             return true;
         }
@@ -131,18 +129,27 @@ public class Chunk
         {
             if (block.OnBreak(x + X * maxX, y, z + Z * maxZ))
             {
-                if (takeMoney && block != null) Game.Money += block.Info.Price;
+                if (takeMoney && block != null)
+                {
+                    MultiblockPartComponent mpc = block.GetComponent<MultiblockPartComponent>();
+                    if (mpc != null) Game.Money += mpc.parentBlock.Price;
+                    else Game.Money += block.Info.Price;
+                }
                 Blocks.SetBlock(x, y, z, null);
             }
         }
         else
         {
-            if (takeMoney && block != null) Game.Money += block.Info.Price;
+            if (takeMoney && block != null)
+            {
+                MultiblockPartComponent mpc = block.GetComponent<MultiblockPartComponent>();
+                if (mpc != null) Game.Money += mpc.parentBlock.Price;
+                else Game.Money += block.Info.Price;
+            }
             Blocks.SetBlock(x, y, z, null);
         }
-        Price -= block.Info.Price;
 
-        world.UpdateChunk(this);
+        World.UpdateChunk(this);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -177,7 +184,6 @@ public class Chunk
 
             go.transform.SetParent(parent.transform);
             go.transform.position = parent.transform.position;
-            go.layer = 10;
 
             meshHolders.Add(go);
         }

@@ -16,14 +16,13 @@ public class World : MonoBehaviour
     static Chunk[, ] Chunks = new Chunk[sizeX, sizeZ];
     public static List<Chunk> SelectedChunks = new List<Chunk>();
     static RaycastHit hit;
-    static int layerMask;
     new static Transform camera;
     static System.Random rnd = new System.Random();
     static bool invoke = false;
     static List<Chunk> ToUpdate = new List<Chunk>();
     static bool UpdateChunks = false;
 
-    Chunk tempchunk;
+    static Chunk tempchunk;
 
     void Start()
     {
@@ -31,16 +30,15 @@ public class World : MonoBehaviour
         camera = Game.camera.transform;
 
         builder = gameObject.GetComponent<Builder>();
-        layerMask = LayerMask.GetMask("Chunk");
 
         for (int x = 0; x < sizeX; x++)
             for (int z = 0; z < sizeZ; z++)
-                Chunks[x, z] = new Chunk(x, z, this);
+                Chunks[x, z] = new Chunk(x, z);
 
         StartCoroutine(AddVillagersCoroutine());
         StartCoroutine(SelectChunkCoroutine());
     }
-    void Update()
+    void LateUpdate()
     {
         if (UpdateChunks)
         {
@@ -49,8 +47,6 @@ public class World : MonoBehaviour
                 if (c != null) MeshCreator.UpdateMesh(c, c.Blocks);
             ToUpdate.Clear();
         }
-
-        if (Game.Building) return;
     }
 
     IEnumerator AddVillagersCoroutine()
@@ -91,14 +87,14 @@ public class World : MonoBehaviour
         }
     }
 
-    public void UpdateChunk(Chunk c)
+    public static void UpdateChunk(Chunk c)
     {
         if (ToUpdate.Contains(c)) return;
 
         ToUpdate.Add(c);
         UpdateChunks = true;
     }
-    void SelectChunk()
+    static void SelectChunk()
     {
         if (!Circle.isActive && !EventSystem.current.IsPointerOverGameObject())
         {
@@ -123,7 +119,7 @@ public class World : MonoBehaviour
             }
         }
     }
-    void SelectChunk(Chunk c)
+    static void SelectChunk(Chunk c)
     {
         if (c.building != null)
             foreach (Chunk cc in c.building.Chunks)
@@ -137,7 +133,7 @@ public class World : MonoBehaviour
             SetChunkMaterial(c, Game.materialSelected);
         }
     }
-    void UnselectChunk(Chunk c)
+    static void UnselectChunk(Chunk c)
     {
         if (c.building != null)
             foreach (Chunk cc in c.building.Chunks)

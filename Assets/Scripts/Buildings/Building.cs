@@ -6,7 +6,6 @@ public abstract class Building
     public abstract byte Weight { get; }
     public List<Chunk> Chunks = new List<Chunk>();
     int Exp = 0;
-    static Block tempblock;
     static long tempExp;
 
     public abstract void Update(); //TODO do update per second
@@ -20,7 +19,7 @@ public abstract class Building
 
             foreach (Chunk c in Chunks)
                 foreach (Block b in c.Blocks)
-                    if (b != null) Exp += tempblock.Info.Price * Weight;
+                    if (b != null) Exp += b.Info.Price * Weight;
 
             tempExp += Exp;
         }

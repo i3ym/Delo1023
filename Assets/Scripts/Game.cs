@@ -134,7 +134,7 @@ public class Game : MonoBehaviour
     {
         foreach (SVGImage img in GameObject.FindObjectsOfType<SVGImage>()) SvgImageToRaw(img);
     }
-    void CreateAtlas()
+    static void CreateAtlas()
     {
         Atlas = new Texture2D(1, 1, TextureFormat.RGBA32, false);
         Atlas.filterMode = FilterMode.Point;
