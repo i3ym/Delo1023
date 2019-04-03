@@ -7,7 +7,7 @@ public abstract class Building
     public List<Chunk> Chunks = new List<Chunk>();
     int Exp = 0;
     static Block tempblock;
-    static int tempExp;
+    static long tempExp;
 
     public abstract void Update(); //TODO do update per second
 
@@ -15,18 +15,12 @@ public abstract class Building
     {
         if (Weight != 0)
         {
-            tempExp = Game.Exp;
-            tempExp -= Exp;
+            Game.Exp -= Exp;
             Exp = 0;
 
             foreach (Chunk c in Chunks)
-                for (int x = 0; x < Chunk.maxX; x++)
-                    for (int y = 0; y < c.sizeY; y++)
-                        for (int z = 0; z < Chunk.maxZ; z++)
-                        {
-                            tempblock = c.GetBlock(x, y, z);
-                            if (tempblock != null) Exp += tempblock.Info.Price * Weight;
-                        }
+                foreach (Block b in c.Blocks)
+                    if (b != null) Exp += tempblock.Info.Price * Weight;
 
             tempExp += Exp;
         }

@@ -54,6 +54,7 @@ public class Builder : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             move.enabled = QuitMenu.activeSelf;
             QuitMenu.SetActive(!QuitMenu.activeSelf);
+            Game.Paused = QuitMenu.activeSelf;
         }
 
         ChooseBlock();
@@ -144,9 +145,8 @@ public class Builder : MonoBehaviour
     void PlaceBlock()
     {
         Vector3Int? pos = BlockRaycast.RaycastBlockForPlace(Game.cameratr.position, Game.cameratr.forward, .05f, 2000);
-        if (move.enabled && pos.HasValue && building.Chunks.Contains(World.GetChunkByBlock(pos.Value.x, pos.Value.z)) && Game.Money - Block.Blocks[selectedBlock].Price >= 0)
-            if (World.SetBlock(pos.Value, Block.Blocks[selectedBlock].Instance()))
-                Game.Money -= Block.Blocks[selectedBlock].Price;
+        if (pos.HasValue && !Game.Paused && building.Chunks.Contains(World.GetChunkByBlock(pos.Value.x, pos.Value.z)))
+            World.SetBlock(pos.Value, Block.Blocks[selectedBlock].Instance(), true);
     }
     void RemoveBlock()
     {

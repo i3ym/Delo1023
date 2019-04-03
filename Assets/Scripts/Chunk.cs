@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -11,10 +12,9 @@ public class Chunk
     public const int maxX = 20;
     public const int maxZ = 20;
     public int X, Z;
-    public List<Block[, ]> Blocks = new List<Block[, ]>();
+    public BlockList Blocks = new BlockList();
     public int Price = 0;
     public Building building = null;
-    public int sizeY = 0;
     public GameObject parent;
     World world;
     List<Mesh> meshes = new List<Mesh>();
@@ -54,8 +54,10 @@ public class Chunk
     public void Generate()
     {
         const float seed = .5f;
+
         Blocks.Clear();
-        sizeY = 0;
+        Game.Money += Price;
+        Price = 0;
 
         Parallel.For(0, maxX, (int xx, ParallelLoopState _) =>
         {
@@ -67,9 +69,9 @@ public class Chunk
                 perlin = Math.Max(perlin, 0) + 30;
 
                 for (int yy = 0; yy < perlin; yy++)
-                    SetBlock(xx, yy, zz, Block.Dirt.Instance(), update : false, rotation : 0);
+                    SetBlock(xx, yy, zz, Block.Dirt.Instance(), rotation : 0, takeMoney : false);
 
-                SetBlock(xx, perlin, zz, Block.Grass.Instance(), update : false, rotation : 0);
+                SetBlock(xx, perlin, zz, Block.Grass.Instance(), rotation : 0, takeMoney : false);
             }
         });
     }
@@ -77,28 +79,16 @@ public class Chunk
     {
         int price = 0;
 
-        for (int xx = 0; xx < maxX; xx++)
-            for (int yy = 0; yy < 10; yy++)
-                for (int zz = 0; zz < maxZ; zz++)
-                    if (Blocks[yy][xx, zz] != null)
-                        price += Blocks[yy][xx, zz].Info.Price;
+        foreach (Block b in Blocks)
+            if (b != null) price += b.Info.Price;
 
         return price;
     }
-    public bool SetBlock(int x, int y, int z, Block b, bool update = true, bool updateFast = false, byte rotation = byte.MaxValue)
+    public bool SetBlock(int x, int y, int z, Block b, byte rotation = byte.MaxValue, bool takeMoney = true)
     {
-        while (y >= sizeY)
-        {
-            lock(Blocks)
-            {
-                Blocks.Add(new Block[maxX, maxZ]);
-                sizeY++;
-            }
-        }
+        if (Blocks.GetBlock(x, y, z) != null) return false;
 
-        if (Blocks[y][x, z] != null) return false;
-
-        if (b.Info != Block.Transparent && b.Info.mesh != null)
+        if (b.Info.mesh != null && b.Info != Block.Transparent)
         {
             if (rotation != byte.MaxValue) b.Rotation = rotation;
             else
@@ -117,42 +107,53 @@ public class Chunk
                 }
         }
 
+        if (takeMoney && Game.Money < b.Info.Price) return false;
+
         if (b.OnPlace(x + X * maxX, y, z + Z * maxZ, b.Rotation))
         {
-            Blocks[y][x, z] = b;
+            Blocks.SetBlock(x, y, z, b);
+            if (takeMoney) Game.Money -= b.Info.Price;
+            Price += b.Info.Price;
             world.UpdateChunk(this);
 
-            /*if (update)
-            {
-                if (updateFast) MeshCreator.UpdateMeshFast(this, x, y, z, meshes[meshes.Count - 1], meshesCollider[meshesCollider.Count - 1], meshes.Count - 1, b);
-                else MeshCreator.UpdateMesh(this, Blocks);
-            }*/
             return true;
         }
 
         return false;
     }
-    public void RemoveBlock(int x, int y, int z, bool shootEvent = true)
+    public void RemoveBlock(int x, int y, int z, bool shootEvent = true, bool takeMoney = true)
     {
-        if (y < 0 || y >= sizeY) return;
-        if (x < 0 || x > maxX - 1 || z < 0 || z > maxX - 1) return;
+        if (IsCoordsOffBounds(x, y, z)) return;
 
-        if (shootEvent && Blocks[y][x, z].OnBreak(x + X * maxX, y, z + Z * maxZ)) Blocks[y][x, z] = null;
-        else Blocks[y][x, z] = null;
-        MeshCreator.UpdateMesh(this, Blocks);
-    }
-    public Block GetBlock(int x, int y, int z)
-    {
-        if (y < 0 || y >= sizeY) return null;
-        if (x < 0 || x > maxX - 1 || z < 0 || z > maxX - 1) return null;
+        Block block = Blocks.GetBlock(x, y, z);
 
-        return Blocks[y][x, z];
+        if (shootEvent)
+        {
+            if (block.OnBreak(x + X * maxX, y, z + Z * maxZ))
+            {
+                if (takeMoney && block != null) Game.Money += block.Info.Price;
+                Blocks.SetBlock(x, y, z, null);
+            }
+        }
+        else
+        {
+            if (takeMoney && block != null) Game.Money += block.Info.Price;
+            Blocks.SetBlock(x, y, z, null);
+        }
+        Price -= block.Info.Price;
+
+        world.UpdateChunk(this);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Block GetBlock(int x, int y, int z) => IsCoordsOffBounds(x, y, z) ? null : Blocks.GetBlock(x, y, z);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    bool IsCoordsOffBounds(int x, int y, int z) => y < 0 || x < 0 || x > maxX - 1 || z < 0 || z > maxX - 1;
     public void SetMesh(Vector3[] verts, int[] tris, Vector2[] uv, int index, bool isMainThread = true)
     {
         if (!isMainThread)
         {
-            world.Invoke(() => SetMesh(verts, tris, uv, index));
+            Game.Invoke(() => SetMesh(verts, tris, uv, index));
             return;
         }
 

@@ -48,7 +48,7 @@ static class MeshCreator
         yield return new WaitForSeconds(5f);
         new Thread(() => UpdateMesh(c, c.Blocks, false)).Start();
     }
-    public static void UpdateMesh(Chunk c, List<Block[, ]> Blocks, bool isMainThread = true)
+    public static void UpdateMesh(Chunk c, BlockList Blocks, bool isMainThread = true)
     {
         Parallel.For(0, Chunk.maxX, (int x, ParallelLoopState _) =>
         {
@@ -68,11 +68,11 @@ static class MeshCreator
                 uvss[x].Clear();
             }
 
-            for (int y = 0; y < Blocks.Count; y++)
+            for (int y = 0; y < Blocks.SizeY; y++)
             {
                 for (int z = 0; z < Chunk.maxZ; z++)
                 {
-                    tb = Blocks[y][x, z];
+                    tb = Blocks.GetBlock(x, y, z);
                     coords.Set(x + .5f, y, z + .5f);
 
                     if (tb == null) continue;

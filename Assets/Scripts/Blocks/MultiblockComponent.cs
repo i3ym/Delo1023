@@ -38,7 +38,7 @@ public class MultiblockComponent : BComponent
         }
 
         foreach (Vector3Int pos in Locations)
-            World.SetBlock(x + pos.x, y + pos.y, z + pos.z, b, update : false);
+            World.SetBlock(x + pos.x, y + pos.y, z + pos.z, b);
 
         MeshCreator.UpdateMesh(chunk, chunk.Blocks);
 

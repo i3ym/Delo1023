@@ -15,12 +15,9 @@ public class BuildingHouse : Building
         Villagers = 0;
 
         foreach (Chunk c in Chunks)
-        {
-            for (int x = 0; x < Chunk.maxX; x++)
-                for (int y = 0; y < c.Blocks.Count; y++)
-                    for (int z = 0; z < Chunk.maxZ; z++)
-                        if (c.GetBlock(x, y, z)?.Info == Block.Bed) Villagers++;
-        }
+            foreach (Block b in c.Blocks)
+                if (b != null && b.Info == Block.Bed) Villagers++;
+
         Game.VillagersMax += Villagers;
     }
 }

@@ -21,14 +21,17 @@ public class Game : MonoBehaviour
     public static Texture2D Atlas;
     public static Material material, materialSelected, materialUnselected;
     public static bool Building = false;
+    public static bool Paused = false;
     public static World world;
     public static List<Building> Buildings = new List<Building>();
     public static Game game = null;
+    static List<Action> Actions = new List<Action>();
+    static bool invoke = false;
 
-    public static int Money { get => _money; set { _money = value; game.textMoney.text = value.ToString(); } }
-    public static int Villagers { get => _villagers; set { _villagers = value; game.textVillagers.text = value + " / " + VillagersMax; } }
-    public static int VillagersMax { get => _villagersMax; set { _villagersMax = value; Villagers = Math.Min(VillagersMax, Villagers); } }
-    public static int Exp
+    public static long Money { get => _money; set { _money = value; Invoke(() => game.textMoney.text = value.ToString()); } }
+    public static long Villagers { get => _villagers; set { _villagers = value; Invoke(() => game.textVillagers.text = value + " / " + VillagersMax); } }
+    public static long VillagersMax { get => _villagersMax; set { _villagersMax = value; Villagers = Math.Min(VillagersMax, Villagers); } }
+    public static long Exp
     {
         get => _exp;
         set
@@ -37,7 +40,7 @@ public class Game : MonoBehaviour
             int newlevel = LvlForExp(value);
             if (Level != newlevel) Level = newlevel;
 
-            game.rainbowExperience.anchoredPosition = new Vector2(0f, 1f / ((ExpForLvl(Level + 1) - ExpForLvl(Level)) / (float) (value - ExpForLvl(Level))) * 116f);
+            Invoke(() => game.rainbowExperience.anchoredPosition = new Vector2(0f, 1f / ((ExpForLvl(Level + 1) - ExpForLvl(Level)) / (float) (value - ExpForLvl(Level))) * 116f));
         }
     }
     public static int Level
@@ -46,10 +49,11 @@ public class Game : MonoBehaviour
         private set
         {
             _level = value;
-            game.textLevel.text = value.ToString();
+            Invoke(() => game.textLevel.text = value.ToString());
         }
     }
-    static int _money = 0, _villagers = 0, _level = 0, _exp = 0, _villagersMax;
+    static long _money = 0, _villagers = 0, _exp = 0, _villagersMax;
+    static int _level;
 
     [SerializeField]
     Material mat = null;
@@ -90,8 +94,32 @@ public class Game : MonoBehaviour
         TextureMeshUvs.Add("transparent", new Vector2[] { });
 
         Block.CreateBlocks();
+
+        StartCoroutine(InvokerCoroutine());
     }
 
+    IEnumerator InvokerCoroutine()
+    {
+        WaitUntil wait = new WaitUntil(() => invoke);
+
+        while (true)
+        {
+            yield return wait;
+            foreach (Action action in Actions) action();
+            Actions.Clear();
+            invoke = false;
+        }
+    }
+    public static void Invoke(Action action)
+    {
+        if (Actions.Contains(action)) return;
+
+        lock(Actions)
+        {
+            Actions.Add(action);
+            invoke = true;
+        }
+    }
     public static void SvgImageToRaw(SVGImage img)
     {
         return;
@@ -139,7 +167,7 @@ public class Game : MonoBehaviour
     }
 
     static int ExpForLvl(int lvl) => (int) (Math.Sqrt(lvl) * lvl * 1000.0);
-    static int LvlForExp(int exp)
+    static int LvlForExp(long exp)
     {
         for (int i = 0; true; i++)
             if (ExpForLvl(i) > exp) return i - 1;

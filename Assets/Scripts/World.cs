@@ -19,7 +19,6 @@ public class World : MonoBehaviour
     static int layerMask;
     new static Transform camera;
     static System.Random rnd = new System.Random();
-    static List<Action> Actions = new List<Action>();
     static bool invoke = false;
     static List<Chunk> ToUpdate = new List<Chunk>();
     static bool UpdateChunks = false;
@@ -43,12 +42,6 @@ public class World : MonoBehaviour
     }
     void Update()
     {
-        if (invoke)
-        {
-            invoke = false;
-            foreach (Action action in Actions) action();
-        }
-
         if (UpdateChunks)
         {
             UpdateChunks = false;
@@ -104,11 +97,6 @@ public class World : MonoBehaviour
 
         ToUpdate.Add(c);
         UpdateChunks = true;
-    }
-    public void Invoke(Action action)
-    {
-        Actions.Add(action);
-        invoke = true;
     }
     void SelectChunk()
     {
@@ -217,22 +205,22 @@ public class World : MonoBehaviour
         builder.enabled = true;
     }
 
-    public static bool SetBlock(int x, int y, int z, Block b, bool updatefast = false, bool update = true)
+    public static bool SetBlock(int x, int y, int z, Block b, bool takeMoney = true)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return false;
 
-        return Chunks[x / Chunk.maxX, z / Chunk.maxZ].SetBlock(x % Chunk.maxX, y, z % Chunk.maxZ, b, updateFast : updatefast, update : update);
+        return Chunks[x / Chunk.maxX, z / Chunk.maxZ].SetBlock(x % Chunk.maxX, y, z % Chunk.maxZ, b, takeMoney : takeMoney);
     }
-    public static bool SetBlock(Vector3 pos, Block b, bool updatefast = false, bool update = true) => SetBlock((int) pos.x, (int) pos.y, (int) pos.z, b, updatefast, update);
-    public static bool SetBlock(Vector3Int pos, Block b, bool updatefast = false, bool update = true) => SetBlock(pos.x, pos.y, pos.z, b, updatefast, update);
-    public static void RemoveBlock(int x, int y, int z, bool shootEvent = true)
+    public static bool SetBlock(Vector3 pos, Block b, bool takeMoney = true) => SetBlock((int) pos.x, (int) pos.y, (int) pos.z, b, takeMoney);
+    public static bool SetBlock(Vector3Int pos, Block b, bool takeMoney = true) => SetBlock(pos.x, pos.y, pos.z, b, takeMoney);
+    public static void RemoveBlock(int x, int y, int z, bool shootEvent = true, bool takeMoney = true)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return;
 
-        Chunks[x / Chunk.maxX, z / Chunk.maxZ].RemoveBlock(x % Chunk.maxX, y, z % Chunk.maxZ, shootEvent);
+        Chunks[x / Chunk.maxX, z / Chunk.maxZ].RemoveBlock(x % Chunk.maxX, y, z % Chunk.maxZ, shootEvent, takeMoney);
     }
-    public static void RemoveBlock(Vector3 pos, bool shootEvent = true) => RemoveBlock((int) pos.x, (int) pos.y, (int) pos.z, shootEvent);
-    public static void RemoveBlock(Vector3Int pos, bool shootEvent = true) => RemoveBlock(pos.x, pos.y, pos.z, shootEvent);
+    public static void RemoveBlock(Vector3 pos, bool shootEvent = true, bool takeMoney = true) => RemoveBlock((int) pos.x, (int) pos.y, (int) pos.z, shootEvent, takeMoney);
+    public static void RemoveBlock(Vector3Int pos, bool shootEvent = true, bool takeMoney = true) => RemoveBlock(pos.x, pos.y, pos.z, shootEvent, takeMoney);
     public static Block GetBlock(int x, int y, int z)
     {
         if (x < 0 || x > sizeX * Chunk.maxX - 1 || z < 0 || z > sizeZ * Chunk.maxZ - 1 || Chunks[x / Chunk.maxX, z / Chunk.maxZ] == null) return null;
