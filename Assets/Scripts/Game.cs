@@ -23,8 +23,9 @@ public class Game : MonoBehaviour
     public static bool Building = false;
     public static bool Paused = false;
     public static World world;
-    public static List<Building> Buildings = new List<Building>();
     public static Game game = null;
+    public static ChunkCopy[] CopiedChunks;
+    public static List<Building> Buildings = new List<Building>();
     static List<Action> Actions = new List<Action>();
     static bool invoke = false;
 
@@ -52,8 +53,8 @@ public class Game : MonoBehaviour
             Invoke(() => game.textLevel.text = value.ToString());
         }
     }
-    static long _money = 0, _villagers = 0, _exp = 0, _villagersMax;
-    static int _level;
+    static long _money = 0, _villagers = 0, _exp = 0, _villagersMax = 0;
+    static int _level = 0;
 
     [SerializeField]
     Material mat = null;

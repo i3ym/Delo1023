@@ -33,6 +33,13 @@ public class BlockList : IEnumerable<Block>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear() => Blocks.Clear();
 
+    public BlockList Clone()
+    {
+        BlockList list = new BlockList();
+        list.Blocks.AddRange(Blocks);
+        return list;
+    }
+
     public IEnumerator<Block> GetEnumerator()
     {
         foreach (var ba in Blocks)

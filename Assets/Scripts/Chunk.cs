@@ -52,11 +52,15 @@ public class Chunk
     {
         const float seed = .5f;
 
-        Blocks.Clear();
         int price = 0;
         foreach (Block b in Blocks)
             if (b != null) price += b.Info.Price;
         Game.Money += price;
+
+        for (int x = 0; x < maxX; x++)
+            for (int y = 0; y < Blocks.SizeY; y++)
+                for (int z = 0; z < maxZ; z++)
+                    RemoveBlock(x, y, z, takeMoney : true);
 
         Parallel.For(0, maxX, (int xx, ParallelLoopState _) =>
         {

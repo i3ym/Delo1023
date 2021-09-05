@@ -8,7 +8,19 @@ public class CircleActions : Circle
     {
         items.Add(new CircleItem(sprites[0], () =>
         {
-            Debug.Log("copy");
+            List<ChunkCopy> copies = new List<ChunkCopy>();
+
+            int minx = int.MaxValue;
+            int minz = int.MaxValue;
+
+            foreach (Chunk c in World.SelectedChunks)
+            {
+                if (minx > c.X) minx = c.X;
+                if (minz > c.Z) minx = c.Z;
+            }
+
+            foreach (Chunk c in World.SelectedChunks)
+                copies.Add(new ChunkCopy(c.X - minx, c.Z - minz, c.Blocks.Clone()));
         }));
         items.Add(new CircleItem(sprites[1], () =>
         {
